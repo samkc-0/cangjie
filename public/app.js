@@ -476,26 +476,9 @@ function TutorApp() {
                     {isSubmitting ? strings.saving : strings.submit}
                   </button>
                 </form>
-                <div className="stats-grid drill-stats">
-                  <div className="stat">
-                    <span className="label">{strings.statsAccuracy}</span>
-                    <span className="value">{formatPercent(accuracy || 0)}</span>
-                  </div>
-                  <div className="stat">
-                    <span className="label">{strings.statsCorrect}</span>
-                    <span className="value">{stats.correct}</span>
-                  </div>
-                  <div className="stat">
-                    <span className="label">{strings.statsIncorrect}</span>
-                    <span className="value">{stats.incorrect}</span>
-                  </div>
-                </div>
                 {feedback && feedbackMessage ? (
                   <div className={`feedback ${feedback.type}`}>{feedbackMessage}</div>
                 ) : null}
-                <button type="button" className="btn-renaissance" onClick={resetProgress} disabled={isSubmitting}>
-                  {strings.resetSession}
-                </button>
               </>
             ) : (
               <div className="status-block">
@@ -505,6 +488,24 @@ function TutorApp() {
           </div>
         </section>
       </div>
+
+      <footer className="status-bar">
+        <div className="status-item">
+          <span className="label">{strings.statsAccuracy}</span>
+          <span className="value">{formatPercent(accuracy || 0)}</span>
+        </div>
+        <div className="status-item">
+          <span className="label">{strings.statsCorrect}</span>
+          <span className="value">{stats.correct}</span>
+        </div>
+        <div className="status-item">
+          <span className="label">{strings.statsIncorrect}</span>
+          <span className="value">{stats.incorrect}</span>
+        </div>
+        <button type="button" className="status-reset" onClick={resetProgress} disabled={isSubmitting}>
+          {strings.resetSession}
+        </button>
+      </footer>
 
       {isDrawerOpen && (
         <>

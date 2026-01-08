@@ -26,9 +26,14 @@
   box-sizing: border-box;
 }
 
+html {
+  height: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  height: 100%;
   font-family:
     "Songti TC", "Songti SC", "STSong", "SimSun", "EB Garamond",
     "Cormorant Garamond", Garamond, serif;
@@ -48,7 +53,7 @@ body {
   color: var(--ink);
   line-height: 1.6;
   letter-spacing: 0.01em;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 ::selection {
@@ -156,6 +161,9 @@ p {
   z-index: 5;
 }
 
+.help-panel h1 {
+  font-size: 1.4rem;
+}
 .help-panel h1,
 .help-panel h2 {
   margin-bottom: 0.3rem;
@@ -271,6 +279,7 @@ p {
 .drill-content {
   width: min(640px, 100%);
   text-align: center;
+  padding-bottom: 5rem;
 }
 
 .drawer-overlay {
@@ -547,10 +556,6 @@ input[type="text"]:focus {
   margin-bottom: var(--space-base);
 }
 
-.drill-stats {
-  margin-top: 1.2rem;
-}
-
 .stat {
   background: #fff7e4;
   border-radius: var(--radius-sm);
@@ -612,6 +617,57 @@ input[type="text"]:focus {
 .empty-state {
   font-style: italic;
   color: rgba(43, 27, 18, 0.6);
+}
+
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1.2rem;
+  background: linear-gradient(90deg, #d6c7aa, #cab18c);
+  box-shadow:
+    0 -2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  font-family: "Songti TC", "Songti SC", "STSong", "SimSun", serif;
+  z-index: 15;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  color: var(--deep-ink);
+}
+
+.status-item .label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.status-reset {
+  margin-left: auto;
+  border: none;
+  background: #6b1f1a;
+  color: #fff7ec;
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: "EB Garamond", serif;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.status-reset:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-renaissance {
