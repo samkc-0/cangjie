@@ -4,9 +4,12 @@
   "description": "Full-stack Cangjie typing tutor with progress tracking",
   "main": "server.js",
   "scripts": {
-    "dev": "node server.js",
-    "start": "NODE_ENV=production node server.js",
+    "dev": "bun server.js",
+    "start": "NODE_ENV=production bun server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
   },
   "keywords": [],
   "author": "",

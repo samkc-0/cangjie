@@ -7,17 +7,17 @@ Express + React single-page application for practicing the Cangjie input method 
 - Curated lesson plans that cover the base Cangjie radicals as well as short phrases.
 - Fast React interface that gives immediate correctness feedback for every keystroke.
 - Server-side progress tracking with streaks, lesson history, and per-lesson best accuracy metrics.
-- Lightweight setup: Express serves the API plus the static assets, so there is only one `npm` project to run.
+- Lightweight setup: Express serves the API plus the static assets, so there is only one Bun project to run.
 
 ## Getting Started
 
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 # Visit http://localhost:3000
 ```
 
-The default port is `3000`. Override it with `PORT=4000 npm run dev`.
+Use `PORT=4000 bun run dev` (or any port you choose) to override the default. For a production-style run, execute `bun run start`.
 
 ## Project Structure
 
