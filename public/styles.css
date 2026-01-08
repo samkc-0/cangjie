@@ -63,7 +63,7 @@ body {
 
 .app-shell {
   min-height: 100vh;
-  padding: clamp(0.5rem, 2vw, 1.5rem);
+  /* padding: clamp(0.5rem, 2vw, 1.5rem); */
   display: flex;
   justify-content: center;
   align-items: stretch;
