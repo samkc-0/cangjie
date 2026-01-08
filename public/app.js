@@ -168,7 +168,7 @@ function TutorApp() {
               <button
                 key={lesson.id}
                 type="button"
-                className={`lesson-button ${lesson.id === currentLessonId ? 'active' : ''}`}
+                className={`lesson-button btn-engraved ${lesson.id === currentLessonId ? 'active' : ''}`}
                 onClick={() => setCurrentLessonId(lesson.id)}
               >
                 <div className="lesson-info">
@@ -209,7 +209,7 @@ function TutorApp() {
                   onChange={(event) => setInput(event.target.value.toUpperCase())}
                   disabled={isSubmitting}
                 />
-                <button type="submit" className="primary" disabled={isSubmitting}>
+                <button type="submit" className="btn-seal" disabled={isSubmitting}>
                   {isSubmitting ? 'Saving…' : 'Submit'}
                 </button>
               </form>
@@ -232,7 +232,7 @@ function TutorApp() {
             <p>No lesson selected.</p>
           )}
           {feedback && <div className={`feedback ${feedback.type}`}>{feedback.message}</div>}
-          <button type="button" className="primary" onClick={resetProgress} disabled={isSubmitting}>
+          <button type="button" className="btn-renaissance" onClick={resetProgress} disabled={isSubmitting}>
             Reset session
           </button>
         </section>
