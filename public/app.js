@@ -42,7 +42,112 @@ const decomposeCode = (code = '') =>
       name: CANGJIE_COMPONENTS[letter]?.name ?? 'Unknown component'
     }));
 
-function CharacterTooltip({ character }) {
+const HELP_PANEL_ID = 'help-panel';
+
+const LOCALES = {
+  en: {
+    title: 'Cangjie Typing Tutor',
+    tagline: 'Practice Cangjie input, track streaks, and build reliable muscle memory.',
+    lessonsHeading: 'Lessons',
+    progressHeading: 'Progress',
+    drillHeading: 'Drill Session',
+    drillInstruction: 'Type the matching Cangjie codes to advance through the sequence.',
+    enterCodeLabel: 'Enter the Cangjie code:',
+    submit: 'Submit',
+    saving: 'Saving…',
+    resetSession: 'Reset session',
+    loadingTitle: 'Loading tutor…',
+    loadingSubtitle: 'Preparing lessons and progress.',
+    errorTitle: 'Unable to load data',
+    errorSubtitle: 'Please refresh and try again.',
+    noLessonSelected: 'Select a lesson to begin.',
+    statsAccuracy: 'Accuracy',
+    statsCorrect: 'Correct',
+    statsIncorrect: 'Incorrect',
+    totalSessions: 'Total Sessions',
+    streak: 'Streak',
+    bestStreak: 'Best Streak',
+    bestAccuracy: 'Best Accuracy',
+    recentSessions: 'Recent Sessions',
+    historyAccuracy: 'Accuracy',
+    historySpeed: 'Speed',
+    historySpeedUnit: 'chars/min',
+    historyEmpty: 'Complete a lesson to see history.',
+    lessonNew: 'New lesson',
+    lessonProgress: (count, accuracy) => `${count} completions · best ${formatPercent(accuracy)}`,
+    feedbackCorrect: 'Correct! Keep going.',
+    feedbackExpected: 'Expected',
+    feedbackSessionSaved: 'Great job! Session saved.',
+    feedbackSessionFailed: 'Could not save progress. Try again.',
+    languageEnglish: 'EN',
+    languageChinese: '中文',
+    languageToggleLabel: 'Language toggle',
+    helpLabel: 'Toggle help menu',
+    openDrawer: 'Lessons & progress',
+    closeDrawer: 'Close panel'
+  },
+  zh: {
+    title: '倉頡打字教練',
+    tagline: '練習倉頡輸入，追蹤連勝並建立穩定肌肉記憶。',
+    lessonsHeading: '課程',
+    progressHeading: '進度',
+    drillHeading: '練習區',
+    drillInstruction: '輸入正確的倉頡碼即可前進下一個字。',
+    enterCodeLabel: '輸入倉頡碼：',
+    submit: '送出',
+    saving: '儲存中…',
+    resetSession: '重新開始',
+    loadingTitle: '載入中…',
+    loadingSubtitle: '正在準備課程與進度資料。',
+    errorTitle: '無法取得資料',
+    errorSubtitle: '請重新整理後再試一次。',
+    noLessonSelected: '請先選擇課程。',
+    statsAccuracy: '正確率',
+    statsCorrect: '答對',
+    statsIncorrect: '答錯',
+    totalSessions: '總練習',
+    streak: '連勝',
+    bestStreak: '最佳連勝',
+    bestAccuracy: '最佳正確率',
+    recentSessions: '最近紀錄',
+    historyAccuracy: '正確率',
+    historySpeed: '速度',
+    historySpeedUnit: '字/分',
+    historyEmpty: '完成一堂課即可看到歷史紀錄。',
+    lessonNew: '新課程',
+    lessonProgress: (count, accuracy) => `完成 ${count} 次 · 最佳 ${formatPercent(accuracy)}`,
+    feedbackCorrect: '答對了，繼續！',
+    feedbackExpected: '應輸入',
+    feedbackSessionSaved: '本次紀錄已儲存。',
+    feedbackSessionFailed: '無法儲存進度，請再試一次。',
+    languageEnglish: 'EN',
+    languageChinese: '中文',
+    languageToggleLabel: '語言切換',
+    helpLabel: '顯示/隱藏說明',
+    openDrawer: '課程與進度',
+    closeDrawer: '關閉面板'
+  }
+};
+
+function LanguageToggle({ locale, onChange, labels }) {
+  return (
+    <div className="language-toggle" role="group" aria-label={labels.toggleLabel}>
+      {['en', 'zh'].map((code) => (
+        <button
+          type="button"
+          key={code}
+          className={`language-button ${locale === code ? 'active' : ''}`}
+          onClick={() => onChange(code)}
+          aria-pressed={locale === code}
+        >
+          {labels[code]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function CharacterTooltip({ character, meaning }) {
   const decomposition = useMemo(() => decomposeCode(character?.code ?? ''), [character?.code]);
   const tooltipRef = useRef(null);
   const [offset, setOffset] = useState(0);
@@ -72,10 +177,10 @@ function CharacterTooltip({ character }) {
   }
 
   const ariaDescription = decomposition.length
-    ? `${character.char} ${character.meaning}. Cangjie code ${character.code}: ${decomposition
+    ? `${character.char} ${meaning}. Cangjie code ${character.code}: ${decomposition
         .map((segment) => `${segment.letter} ${segment.glyph} ${segment.name}`)
         .join(', ')}`
-    : `${character.char} ${character.meaning}`;
+    : `${character.char} ${meaning}`;
 
   return (
     <span
@@ -95,7 +200,7 @@ function CharacterTooltip({ character }) {
           style={{ '--tooltip-shift': `${offset}px` }}
         >
           <span className="tooltip-heading">
-            {character.char} · {character.meaning}
+            {character.char} · {meaning}
           </span>
           <span className="tooltip-code" aria-hidden="true">
             {decomposition.map((segment, index) => (
@@ -132,6 +237,16 @@ function TutorApp() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stats, setStats] = useState({ correct: 0, incorrect: 0, startedAt: null });
+  const [locale, setLocale] = useState('en');
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [isHelpOpen, setHelpOpen] = useState(false);
+
+  const strings = LOCALES[locale];
+  const languageLabels = {
+    en: strings.languageEnglish,
+    zh: strings.languageChinese,
+    toggleLabel: strings.languageToggleLabel
+  };
 
   useEffect(() => {
     async function bootstrap() {
@@ -168,11 +283,38 @@ function TutorApp() {
     [lessons, currentLessonId]
   );
   const currentCharacter = currentLesson?.characters[currentIndex];
-
+  const getLessonTitle = (lesson) => (locale === 'zh' ? lesson?.titleZh ?? lesson?.title : lesson?.title);
+  const getLessonDescription = (lesson) =>
+    locale === 'zh' ? lesson?.descriptionZh ?? lesson?.description : lesson?.description;
+  const getMeaning = (character) =>
+    locale === 'zh' ? character?.meaningZh ?? character?.meaning : character?.meaning;
+  const currentMeaning = currentCharacter ? getMeaning(currentCharacter) ?? '' : '';
   const lessonSummary = progress?.summary?.lessonCompletions?.[currentLessonId];
 
   const attempts = stats.correct + stats.incorrect;
   const accuracy = attempts ? stats.correct / attempts : 0;
+  const formattedLessonProgress = (lessonId) => {
+    const summary = progress?.summary?.lessonCompletions?.[lessonId];
+    if (!summary) return strings.lessonNew;
+    return strings.lessonProgress(summary.count, summary.bestAccuracy);
+  };
+  const formatHistoryStats = (attempt) =>
+    `${strings.historyAccuracy} ${formatPercent(attempt.accuracy)} · ${strings.historySpeed} ${formatNumber(
+      attempt.speed
+    )} ${strings.historySpeedUnit}`;
+  const formatTimestamp = (value) => {
+    try {
+      return new Date(value).toLocaleString(locale === 'zh' ? 'zh-Hant' : undefined);
+    } catch (err) {
+      return value;
+    }
+  };
+  const feedbackMessage =
+    feedback && feedback.messageKey === 'feedbackExpected' && feedback.expected
+      ? `${strings.feedbackExpected} ${feedback.expected}`
+      : feedback
+        ? strings[feedback.messageKey] ?? ''
+        : null;
 
   async function finalizeLesson(finalStats) {
     if (!currentLesson) return;
@@ -202,10 +344,10 @@ function TutorApp() {
 
       const updated = await response.json();
       setProgress(updated);
-      setFeedback({ type: 'success', message: 'Great job! Session saved.' });
+      setFeedback({ type: 'success', messageKey: 'feedbackSessionSaved' });
     } catch (err) {
       console.error(err);
-      setFeedback({ type: 'error', message: 'Could not save progress. Try again.' });
+      setFeedback({ type: 'error', messageKey: 'feedbackSessionFailed' });
     } finally {
       setIsSubmitting(false);
       setCurrentIndex(0);
@@ -229,7 +371,8 @@ function TutorApp() {
     setStats({ correct: nextCorrect, incorrect: nextIncorrect, startedAt });
     setFeedback({
       type: isCorrect ? 'success' : 'error',
-      message: isCorrect ? 'Correct! Keep going.' : `Expected ${currentCharacter.code}`
+      messageKey: isCorrect ? 'feedbackCorrect' : 'feedbackExpected',
+      expected: isCorrect ? null : currentCharacter.code
     });
     setInput('');
 
@@ -249,153 +392,193 @@ function TutorApp() {
     setFeedback(null);
   }
 
-  if (loading) {
-    return (
-      <div className="app-shell">
-        <header>
-          <h1>Cangjie Typing Tutor</h1>
-          <p>Loading lessons…</p>
-        </header>
-      </div>
-    );
+  function handleLocaleChange(nextLocale) {
+    if (nextLocale === locale) return;
+    setLocale(nextLocale);
   }
 
-  if (error) {
-    return (
-      <div className="app-shell">
-        <header>
-          <h1>Cangjie Typing Tutor</h1>
-        </header>
-        <div className="feedback error">{error}</div>
-      </div>
-    );
+  function openDrawer() {
+    setDrawerOpen(true);
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+  }
+
+  function handleLessonSelect(lessonId) {
+    setCurrentLessonId(lessonId);
+    closeDrawer();
+  }
+
+  function toggleHelp() {
+    setHelpOpen((current) => !current);
   }
 
   return (
     <div className="app-shell">
-      <header>
-        <h1>Cangjie Typing Tutor</h1>
-        <p>Practice Cangjie input, track streaks, and build reliable muscle memory.</p>
-      </header>
-
-      <main>
-        <section className="card">
-          <h2>Lessons</h2>
-          <div className="lesson-grid">
-            {lessons.map((lesson) => (
-              <button
-                key={lesson.id}
-                type="button"
-                className={`lesson-button btn-engraved ${lesson.id === currentLessonId ? 'active' : ''}`}
-                onClick={() => setCurrentLessonId(lesson.id)}
-              >
-                <div className="lesson-info">
-                  <h3>{lesson.title}</h3>
-                  <p>{lesson.description}</p>
-                </div>
-                {progress?.summary?.lessonCompletions?.[lesson.id] ? (
-                  <span className="lesson-progress">
-                    {progress.summary.lessonCompletions[lesson.id].count} completions · best{' '}
-                    {formatPercent(progress.summary.lessonCompletions[lesson.id].bestAccuracy)}
-                  </span>
-                ) : (
-                  <span className="lesson-progress">New lesson</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="card">
-          <h2>Drill</h2>
-          {currentCharacter ? (
-            <>
-              <div className="character-display">
-                <CharacterTooltip character={currentCharacter} />
-                <span className="meta">
-                  {currentCharacter.meaning} · {currentIndex + 1}/{currentLesson.characters.length}
-                </span>
-              </div>
-              <form onSubmit={handleSubmit}>
-                <label htmlFor="cangjie-input">Enter the Cangjie code:</label>
-                <input
-                  id="cangjie-input"
-                  type="text"
-                  autoComplete="off"
-                  maxLength="5"
-                  value={input}
-                  onChange={(event) => setInput(event.target.value.toUpperCase())}
-                  disabled={isSubmitting}
-                />
-                <button type="submit" className="btn-seal" disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving…' : 'Submit'}
-                </button>
-              </form>
-              <div className="stats-grid">
-                <div className="stat">
-                  <span className="label">Accuracy</span>
-                  <span className="value">{formatPercent(accuracy || 0)}</span>
-                </div>
-                <div className="stat">
-                  <span className="label">Correct</span>
-                  <span className="value">{stats.correct}</span>
-                </div>
-                <div className="stat">
-                  <span className="label">Incorrect</span>
-                  <span className="value">{stats.incorrect}</span>
-                </div>
-              </div>
-            </>
-          ) : (
-            <p>No lesson selected.</p>
-          )}
-          {feedback && <div className={`feedback ${feedback.type}`}>{feedback.message}</div>}
-          <button type="button" className="btn-renaissance" onClick={resetProgress} disabled={isSubmitting}>
-            Reset session
+      <div className="drill-surface">
+        <header className="top-bar">
+          <button type="button" className="drawer-trigger btn-engraved" onClick={openDrawer}>
+            {strings.openDrawer}
           </button>
-        </section>
-
-        <section className="card">
-          <h2>Progress</h2>
-          <div className="stats-grid">
-            <div className="stat">
-              <span className="label">Total Sessions</span>
-              <span className="value">{progress?.summary?.totalSessions ?? 0}</span>
-            </div>
-            <div className="stat">
-              <span className="label">Streak</span>
-              <span className="value">{progress?.summary?.streak ?? 0}</span>
-            </div>
-            <div className="stat">
-              <span className="label">Best Streak</span>
-              <span className="value">{progress?.summary?.longestStreak ?? 0}</span>
-            </div>
-            <div className="stat">
-              <span className="label">Best Accuracy</span>
-              <span className="value">
-                {lessonSummary ? formatPercent(lessonSummary.bestAccuracy) : '—'}
-              </span>
-            </div>
+          <button
+            type="button"
+            className={`help-trigger ${isHelpOpen ? 'active' : ''}`}
+            aria-label={strings.helpLabel}
+            aria-controls={HELP_PANEL_ID}
+            aria-expanded={isHelpOpen}
+            onClick={toggleHelp}
+          >
+            ?
+          </button>
+        </header>
+        {isHelpOpen && (
+          <div className="help-panel" id={HELP_PANEL_ID}>
+            <h1>{strings.title}</h1>
+            <p>{strings.tagline}</p>
+            <h2>{strings.drillHeading}</h2>
+            <p>{strings.drillInstruction}</p>
           </div>
-
-          <h3>Recent Sessions</h3>
-          <div className="history-list">
-            {progress?.attempts?.length ? (
-              progress.attempts.map((attempt, index) => (
-                <div key={`${attempt.completedAt}-${index}`} className="history-item">
-                  <strong>{lessons.find((l) => l.id === attempt.lessonId)?.title ?? attempt.lessonId}</strong>
-                  <span>
-                    Accuracy {formatPercent(attempt.accuracy)} · Speed {formatNumber(attempt.speed)} chars/min
+        )}
+        <section className="drill-panel">
+          <div className="drill-content">
+            {loading ? (
+              <div className="status-block">
+                <h2>{strings.loadingTitle}</h2>
+                <p>{strings.loadingSubtitle}</p>
+              </div>
+            ) : error ? (
+              <div className="status-block error">
+                <h2>{strings.errorTitle}</h2>
+                <p>{strings.errorSubtitle}</p>
+                {typeof error === 'string' ? <p className="muted">{error}</p> : null}
+              </div>
+            ) : currentLesson && currentCharacter ? (
+              <>
+                <div className="character-display">
+                  <CharacterTooltip character={currentCharacter} meaning={currentMeaning} />
+                  <span className="meta">
+                    {currentMeaning} · {currentIndex + 1}/{currentLesson.characters.length}
                   </span>
-                  <span>{new Date(attempt.completedAt).toLocaleString()}</span>
                 </div>
-              ))
+                <form onSubmit={handleSubmit}>
+                  <label htmlFor="cangjie-input">{strings.enterCodeLabel}</label>
+                  <input
+                    id="cangjie-input"
+                    type="text"
+                    autoComplete="off"
+                    maxLength="5"
+                    value={input}
+                    onChange={(event) => setInput(event.target.value.toUpperCase())}
+                    disabled={isSubmitting}
+                  />
+                  <button type="submit" className="btn-seal" disabled={isSubmitting}>
+                    {isSubmitting ? strings.saving : strings.submit}
+                  </button>
+                </form>
+                <div className="stats-grid drill-stats">
+                  <div className="stat">
+                    <span className="label">{strings.statsAccuracy}</span>
+                    <span className="value">{formatPercent(accuracy || 0)}</span>
+                  </div>
+                  <div className="stat">
+                    <span className="label">{strings.statsCorrect}</span>
+                    <span className="value">{stats.correct}</span>
+                  </div>
+                  <div className="stat">
+                    <span className="label">{strings.statsIncorrect}</span>
+                    <span className="value">{stats.incorrect}</span>
+                  </div>
+                </div>
+                {feedback && feedbackMessage ? (
+                  <div className={`feedback ${feedback.type}`}>{feedbackMessage}</div>
+                ) : null}
+                <button type="button" className="btn-renaissance" onClick={resetProgress} disabled={isSubmitting}>
+                  {strings.resetSession}
+                </button>
+              </>
             ) : (
-              <p className="empty-state">Complete a lesson to see history.</p>
+              <div className="status-block">
+                <h2>{strings.noLessonSelected}</h2>
+              </div>
             )}
           </div>
         </section>
-      </main>
+      </div>
+
+      {isDrawerOpen && (
+        <>
+          <button type="button" className="drawer-overlay" onClick={closeDrawer} aria-label={strings.closeDrawer}></button>
+          <aside className="drawer-panel" role="dialog" aria-modal="true" aria-label={strings.openDrawer}>
+            <div className="drawer-header">
+              <h2>{strings.lessonsHeading}</h2>
+              <button type="button" className="drawer-close" onClick={closeDrawer} aria-label={strings.closeDrawer}>
+                ×
+              </button>
+            </div>
+            {loading ? (
+              <p className="muted">{strings.loadingSubtitle}</p>
+            ) : (
+              <div className="lesson-grid">
+                {lessons.map((lesson) => (
+                  <button
+                    key={lesson.id}
+                    type="button"
+                    className={`lesson-button btn-engraved ${lesson.id === currentLessonId ? 'active' : ''}`}
+                    onClick={() => handleLessonSelect(lesson.id)}
+                  >
+                    <div className="lesson-info">
+                      <h3>{getLessonTitle(lesson)}</h3>
+                      <p>{getLessonDescription(lesson)}</p>
+                    </div>
+                    <span className="lesson-progress">{formattedLessonProgress(lesson.id)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="drawer-lang">
+              <LanguageToggle locale={locale} onChange={handleLocaleChange} labels={languageLabels} />
+            </div>
+            <div className="drawer-section">
+              <h2>{strings.progressHeading}</h2>
+              <div className="stats-grid">
+                <div className="stat">
+                  <span className="label">{strings.totalSessions}</span>
+                  <span className="value">{progress?.summary?.totalSessions ?? 0}</span>
+                </div>
+                <div className="stat">
+                  <span className="label">{strings.streak}</span>
+                  <span className="value">{progress?.summary?.streak ?? 0}</span>
+                </div>
+                <div className="stat">
+                  <span className="label">{strings.bestStreak}</span>
+                  <span className="value">{progress?.summary?.longestStreak ?? 0}</span>
+                </div>
+                <div className="stat">
+                  <span className="label">{strings.bestAccuracy}</span>
+                  <span className="value">{lessonSummary ? formatPercent(lessonSummary.bestAccuracy) : '—'}</span>
+                </div>
+              </div>
+              <h3>{strings.recentSessions}</h3>
+              <div className="history-list">
+                {progress?.attempts?.length ? (
+                  progress.attempts.map((attempt, index) => (
+                    <div key={`${attempt.completedAt}-${index}`} className="history-item">
+                      <strong>
+                        {getLessonTitle(lessons.find((l) => l.id === attempt.lessonId)) ?? attempt.lessonId}
+                      </strong>
+                      <span>{formatHistoryStats(attempt)}</span>
+                      <span>{formatTimestamp(attempt.completedAt)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="empty-state">{strings.historyEmpty}</p>
+                )}
+              </div>
+            </div>
+          </aside>
+        </>
+      )}
     </div>
   );
 }
