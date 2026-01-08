@@ -1,4 +1,4 @@
-const { useEffect, useMemo, useState } = React;
+const { useCallback, useEffect, useMemo, useRef, useState } = React;
 
 const CANGJIE_COMPONENTS = {
   A: { glyph: '日', name: 'sun' },
@@ -44,7 +44,32 @@ const decomposeCode = (code = '') =>
 
 function CharacterTooltip({ character }) {
   const decomposition = useMemo(() => decomposeCode(character?.code ?? ''), [character?.code]);
+  const tooltipRef = useRef(null);
+  const [offset, setOffset] = useState(0);
   if (!character) return null;
+
+  const clampToViewport = useCallback(() => {
+    if (!tooltipRef.current) return;
+    const rect = tooltipRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    const padding = 12;
+    let shift = 0;
+    if (rect.left < padding) {
+      shift = padding - rect.left;
+    } else if (rect.right > viewportWidth - padding) {
+      shift = (viewportWidth - padding) - rect.right;
+    }
+    setOffset(shift);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('resize', clampToViewport);
+    return () => window.removeEventListener('resize', clampToViewport);
+  }, [clampToViewport]);
+
+  function handleInteraction() {
+    requestAnimationFrame(clampToViewport);
+  }
 
   const ariaDescription = decomposition.length
     ? `${character.char} ${character.meaning}. Cangjie code ${character.code}: ${decomposition
@@ -53,21 +78,40 @@ function CharacterTooltip({ character }) {
     : `${character.char} ${character.meaning}`;
 
   return (
-    <span className="char cangjie-char" tabIndex={0} aria-label={ariaDescription}>
+    <span
+      className="char cangjie-char"
+      tabIndex={0}
+      aria-label={ariaDescription}
+      onMouseEnter={handleInteraction}
+      onFocus={handleInteraction}
+      onTouchStart={handleInteraction}
+    >
       {character.char}
       {decomposition.length ? (
-        <span className="cangjie-tooltip" role="tooltip">
+        <span
+          className="cangjie-tooltip"
+          role="tooltip"
+          ref={tooltipRef}
+          style={{ '--tooltip-shift': `${offset}px` }}
+        >
           <span className="tooltip-heading">
             {character.char} · {character.meaning}
           </span>
-          <span className="tooltip-code">{character.code}</span>
+          <span className="tooltip-code" aria-hidden="true">
+            {decomposition.map((segment, index) => (
+              <kbd key={`code-${segment.letter}-${index}`} className="keycap">
+                {segment.letter}
+              </kbd>
+            ))}
+          </span>
           <ul>
             {decomposition.map((segment, index) => (
               <li key={`${segment.letter}-${index}`}>
                 <span className="component-glyph">{segment.glyph}</span>
-                <span className="component-name">
-                  {segment.letter} · {segment.name}
-                </span>
+                <kbd className="keycap component-key">
+                  {segment.letter}
+                </kbd>
+                <span className="component-name">{segment.name}</span>
               </li>
             ))}
           </ul>
