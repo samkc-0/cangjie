@@ -198,6 +198,94 @@ main {
   font-size: clamp(3.4rem, 8vw, 4.5rem);
 }
 
+.cangjie-char {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+}
+
+.cangjie-char:focus-visible {
+  outline: 2px solid rgba(107, 31, 26, 0.45);
+  outline-offset: 4px;
+}
+
+.cangjie-tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.8rem);
+  left: 50%;
+  transform: translate(-50%, 0.4rem);
+  opacity: 0;
+  pointer-events: none;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--deep-ink);
+  color: var(--parchment-light);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  width: min(260px, 80vw);
+  transition: opacity 120ms ease, transform 120ms ease;
+  z-index: 10;
+}
+
+.cangjie-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px 7px 0 7px;
+  border-style: solid;
+  border-color: var(--deep-ink) transparent transparent transparent;
+}
+
+.cangjie-char:hover .cangjie-tooltip,
+.cangjie-char:focus .cangjie-tooltip {
+  opacity: 1;
+  transform: translate(-50%, -0.2rem);
+  pointer-events: auto;
+}
+
+.cangjie-tooltip .tooltip-heading {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.cangjie-tooltip .tooltip-code {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gilding);
+}
+
+.cangjie-tooltip ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cangjie-tooltip li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+}
+
+.cangjie-tooltip .component-glyph {
+  font-size: 1.1rem;
+}
+
+.cangjie-tooltip .component-name {
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .character-display span.meta {
   font-size: 1rem;
   color: var(--warm-ink);

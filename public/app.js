@@ -1,7 +1,81 @@
 const { useEffect, useMemo, useState } = React;
 
+const CANGJIE_COMPONENTS = {
+  A: { glyph: '日', name: 'sun' },
+  B: { glyph: '月', name: 'moon' },
+  C: { glyph: '金', name: 'metal' },
+  D: { glyph: '木', name: 'wood' },
+  E: { glyph: '水', name: 'water' },
+  F: { glyph: '火', name: 'fire' },
+  G: { glyph: '土', name: 'earth' },
+  H: { glyph: '竹', name: 'bamboo' },
+  I: { glyph: '戈', name: 'spear' },
+  J: { glyph: '十', name: 'ten/cross' },
+  K: { glyph: '大', name: 'big' },
+  L: { glyph: '中', name: 'middle' },
+  M: { glyph: '一', name: 'one' },
+  N: { glyph: '弓', name: 'bow' },
+  O: { glyph: '人', name: 'person' },
+  P: { glyph: '心', name: 'heart' },
+  Q: { glyph: '手', name: 'hand' },
+  R: { glyph: '口', name: 'mouth' },
+  S: { glyph: '尸', name: 'corpse' },
+  T: { glyph: '廿', name: 'twenty' },
+  U: { glyph: '山', name: 'mountain' },
+  V: { glyph: '女', name: 'woman' },
+  W: { glyph: '田', name: 'field' },
+  X: { glyph: '難', name: 'difficulty' },
+  Y: { glyph: '卜', name: 'divination' },
+  Z: { glyph: '重', name: 'heavy' }
+};
+
 const formatPercent = (value) => `${Math.round((value ?? 0) * 100)}%`;
 const formatNumber = (value) => (value ? value.toFixed(1) : '0.0');
+const decomposeCode = (code = '') =>
+  code
+    .toUpperCase()
+    .split('')
+    .filter(Boolean)
+    .map((letter) => ({
+      letter,
+      glyph: CANGJIE_COMPONENTS[letter]?.glyph ?? '?',
+      name: CANGJIE_COMPONENTS[letter]?.name ?? 'Unknown component'
+    }));
+
+function CharacterTooltip({ character }) {
+  const decomposition = useMemo(() => decomposeCode(character?.code ?? ''), [character?.code]);
+  if (!character) return null;
+
+  const ariaDescription = decomposition.length
+    ? `${character.char} ${character.meaning}. Cangjie code ${character.code}: ${decomposition
+        .map((segment) => `${segment.letter} ${segment.glyph} ${segment.name}`)
+        .join(', ')}`
+    : `${character.char} ${character.meaning}`;
+
+  return (
+    <span className="char cangjie-char" tabIndex={0} aria-label={ariaDescription}>
+      {character.char}
+      {decomposition.length ? (
+        <span className="cangjie-tooltip" role="tooltip">
+          <span className="tooltip-heading">
+            {character.char} · {character.meaning}
+          </span>
+          <span className="tooltip-code">{character.code}</span>
+          <ul>
+            {decomposition.map((segment, index) => (
+              <li key={`${segment.letter}-${index}`}>
+                <span className="component-glyph">{segment.glyph}</span>
+                <span className="component-name">
+                  {segment.letter} · {segment.name}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 function TutorApp() {
   const [lessons, setLessons] = useState([]);
@@ -193,7 +267,7 @@ function TutorApp() {
           {currentCharacter ? (
             <>
               <div className="character-display">
-                <span className="char">{currentCharacter.char}</span>
+                <CharacterTooltip character={currentCharacter} />
                 <span className="meta">
                   {currentCharacter.meaning} · {currentIndex + 1}/{currentLesson.characters.length}
                 </span>
