@@ -1,4 +1,5 @@
-const { useCallback, useEffect, useMemo, useRef, useState } = React;
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import ReactDOM from 'react-dom/client';
 
 const CANGJIE_COMPONENTS = {
   A: { glyph: '日', name: 'sun' },

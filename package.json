@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "bun server.js",
     "start": "NODE_ENV=production bun server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild public/app.js --bundle --outfile=public/dist/bundle.js --loader:.js=jsx",
+    "build:watch": "bun --watch run build"
   },
   "engines": {
     "bun": ">=1.0.0"
@@ -15,6 +17,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^5.2.1"
+    "esbuild": "^0.27.2",
+    "express": "^5.2.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   }
 }
