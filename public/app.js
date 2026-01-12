@@ -592,44 +592,46 @@ function TutorApp() {
               </div>
             ) : currentLesson && currentCharacter ? (
               <>
-                <div className="character-display">
-                  <CharacterTooltip
-                    character={currentCharacter}
-                    meaning={currentMeaning}
-                  />
-                  <span className="meta" style={{ display: "none" }}>
-                    {currentMeaning} · {currentIndex + 1}/
-                    {currentLesson.characters.length}
-                  </span>
+                <div className="drill-input-group">
+                  <div className="character-display">
+                    <CharacterTooltip
+                      character={currentCharacter}
+                      meaning={currentMeaning}
+                    />
+                    <span className="meta" style={{ display: "none" }}>
+                      {currentMeaning} · {currentIndex + 1}/
+                      {currentLesson.characters.length}
+                    </span>
+                  </div>
+                  <form onSubmit={handleSubmit}>
+                    <label
+                      style={{
+                        display: "none",
+                        position: "fixed",
+                        top: -100,
+                        left: -100,
+                      }}
+                      htmlFor="cangjie-input"
+                    >
+                      {strings.enterCodeLabel} :j
+                    </label>
+                    <input
+                      id="cangjie-input"
+                      type="text"
+                      autoComplete="off"
+                      value={input}
+                      onChange={(event) => setInput(event.target.value)}
+                      disabled={isSubmitting}
+                    />
+                    <button
+                      type="submit"
+                      className="btn-seal"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? strings.saving : strings.submit}
+                    </button>
+                  </form>
                 </div>
-                <form onSubmit={handleSubmit}>
-                  <label
-                    style={{
-                      display: "none",
-                      position: "fixed",
-                      top: -100,
-                      left: -100,
-                    }}
-                    htmlFor="cangjie-input"
-                  >
-                    {strings.enterCodeLabel} :j
-                  </label>
-                  <input
-                    id="cangjie-input"
-                    type="text"
-                    autoComplete="off"
-                    value={input}
-                    onChange={(event) => setInput(event.target.value)}
-                    disabled={isSubmitting}
-                  />
-                  <button
-                    type="submit"
-                    className="btn-seal"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? strings.saving : strings.submit}
-                  </button>
-                </form>
                 {feedback && feedbackMessage ? (
                   <div className={`feedback ${feedback.type}`}>
                     {feedbackMessage}
