@@ -2,6 +2,8 @@
 
 This document provides guidelines for the Gemini agent when working with this repository.
 
+**Important:** This project uses `bun` for package management and running scripts. Do not use `npm` or `yarn`.
+
 ## `scripts/lookup.sh`
 
 The `scripts/lookup.sh` script is a utility for looking up character data from the Unihan database.
