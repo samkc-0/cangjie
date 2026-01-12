@@ -1,11 +1,32 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const AdmZip = require('adm-zip');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'progress.json');
 const PASSING_ACCURACY = 0.85;
+
+// Load Unihan data into memory for faster lookups
+let unihanDataLines = [];
+try {
+  const zip = new AdmZip(path.join(__dirname, 'data', 'unihan.zip'));
+  const unihanReadings = zip.readAsText(zip.getEntry('Unihan_Readings.txt'));
+  const unihanDictData = zip.readAsText(zip.getEntry('Unihan_DictionaryLikeData.txt'));
+  unihanDataLines = (unihanReadings + '\n' + unihanDictData).split('\n');
+  console.log(`Unihan data loaded successfully (${unihanDataLines.length} lines).`);
+} catch (err) {
+  console.error('Failed to load Unihan data:', err);
+  // If the data can't be loaded, the server can still run, but lookups will fail.
+}
+
+const CANGJIE_MAP = {
+  A: '日', B: '月', C: '金', D: '木', E: '水', F: '火', G: '土',
+  H: '竹', I: '戈', J: '十', K: '大', L: '中', M: '一', N: '弓',
+  O: '人', P: '心', Q: '手', R: '口', S: '尸', T: '廿', U: '山',
+  V: '女', W: '田', X: '難', Y: '卜'
+};
 
 const lessons = [
   {
@@ -97,12 +118,51 @@ function writeProgress(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
+function lookupUnihan(char) {
+  const codepoint = `U+${char.charCodeAt(0).toString(16).toUpperCase()}`;
+  const result = {};
+
+  // Ignore comments and empty lines
+  const relevantLines = unihanDataLines.filter(line => line && !line.startsWith('#'));
+
+  for (const line of relevantLines) {
+    if (line.startsWith(codepoint)) {
+      const parts = line.split('\t');
+      if (parts.length >= 3) {
+        const key = parts[1];
+        const value = parts[2];
+        result[key] = value;
+      }
+    }
+  }
+
+  if (result.kCangjie) {
+    result.kCangjieComponents = result.kCangjie.split('')
+      .map(code => CANGJIE_MAP[code] || '')
+      .join('');
+  }
+
+  return result;
+}
+
 app.get('/api/lessons', (req, res) => {
   res.json({ lessons });
 });
 
 app.get('/api/progress', (req, res) => {
   res.json(readProgress());
+});
+
+app.get('/api/unihan/:char', (req, res) => {
+  const char = req.params.char;
+  if (!char || char.length !== 1) {
+    return res.status(400).json({ message: 'A single character is required.' });
+  }
+  if (unihanDataLines.length === 0) {
+    return res.status(503).json({ message: 'Unihan data is not available.' });
+  }
+  const data = lookupUnihan(char);
+  res.json(data);
 });
 
 app.post('/api/progress', (req, res) => {
