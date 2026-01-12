@@ -60,8 +60,8 @@ const LOCALES = {
     progressHeading: "Progress",
     drillHeading: "Drill Session",
     drillInstruction:
-      "Type the matching Cangjie codes to advance through the sequence.",
-    enterCodeLabel: "Enter the Cangjie code: :)",
+      "Type the matching character to advance through the sequence.",
+    enterCodeLabel: "Enter the character:",
     submit: "Submit",
     saving: "Saving…",
     resetSession: "Reset session",
@@ -102,8 +102,8 @@ const LOCALES = {
     lessonsHeading: "課程",
     progressHeading: "進度",
     drillHeading: "練習區",
-    drillInstruction: "輸入正確的倉頡碼即可前進下一個字。",
-    enterCodeLabel: "輸入倉頡碼：",
+    drillInstruction: "輸入對應的漢字以推進。",
+    enterCodeLabel: "輸入漢字：",
     submit: "送出",
     saving: "儲存中…",
     resetSession: "重新開始",
@@ -397,11 +397,11 @@ function TutorApp() {
   function handleSubmit(event) {
     event.preventDefault();
     if (!currentCharacter) return;
-    const sanitized = input.trim().toUpperCase();
+    const sanitized = input.trim();
     if (!sanitized) return;
 
     const startedAt = stats.startedAt ?? Date.now();
-    const isCorrect = sanitized === currentCharacter.code;
+    const isCorrect = sanitized === currentCharacter.char;
     const nextCorrect = stats.correct + (isCorrect ? 1 : 0);
     const nextIncorrect = stats.incorrect + (isCorrect ? 0 : 1);
     const nextIndex = isCorrect ? currentIndex + 1 : currentIndex;
@@ -410,7 +410,7 @@ function TutorApp() {
     setFeedback({
       type: isCorrect ? "success" : "error",
       messageKey: isCorrect ? "feedbackCorrect" : "feedbackExpected",
-      expected: isCorrect ? null : currentCharacter.code,
+      expected: isCorrect ? null : currentCharacter.char,
     });
     setInput("");
 
@@ -521,10 +521,9 @@ function TutorApp() {
                     id="cangjie-input"
                     type="text"
                     autoComplete="off"
-                    maxLength="5"
                     value={input}
                     onChange={(event) =>
-                      setInput(event.target.value.toUpperCase())
+                      setInput(event.target.value)
                     }
                     disabled={isSubmitting}
                   />
