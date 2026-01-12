@@ -4,11 +4,11 @@
   "description": "Full-stack Cangjie typing tutor with progress tracking",
   "main": "server.js",
   "scripts": {
-    "dev": "bun server.js",
-    "start": "NODE_ENV=production bun server.js",
+    "dev": "bun run build:watch & bun --watch server.js",
+    "start": "bun run build && NODE_ENV=production bun server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "esbuild public/app.js --bundle --outfile=public/dist/bundle.js --loader:.js=jsx",
-    "build:watch": "bun --watch run build"
+    "build:watch": "esbuild public/app.js --bundle --outfile=public/dist/bundle.js --loader:.js=jsx --watch=forever"
   },
   "engines": {
     "bun": ">=1.0.0"
