@@ -603,7 +603,15 @@ function TutorApp() {
                   </span>
                 </div>
                 <form onSubmit={handleSubmit}>
-                  <label htmlFor="cangjie-input">
+                  <label
+                    stye={{
+                      display: "none",
+                      position: "fixed",
+                      top: -100,
+                      left: -100,
+                    }}
+                    htmlFor="cangjie-input"
+                  >
                     {strings.enterCodeLabel}
                   </label>
                   <input
