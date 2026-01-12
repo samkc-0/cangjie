@@ -162,13 +162,96 @@ function LanguageToggle({ locale, onChange, labels }) {
   );
 }
 
+const unihanCache = {
+  get: (char) => {
+    try {
+      const cached = localStorage.getItem(`unihan_${char}`);
+      if (!cached) return null;
+      const { data, timestamp } = JSON.parse(cached);
+      // Cache is valid for 24 hours
+      if (Date.now() - timestamp > 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(`unihan_${char}`);
+        return null;
+      }
+      return data;
+    } catch (e) {
+      return null;
+    }
+  },
+  set: (char, data) => {
+    try {
+      const item = {
+        data,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(`unihan_${char}`, JSON.stringify(item));
+    } catch (e) {
+      // Could be quota exceeded
+      console.warn("Could not write to unihan cache", e);
+    }
+  },
+};
+
+function useUnihanData(char) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!char) return;
+
+    let isMounted = true;
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
+
+      const cachedData = unihanCache.get(char);
+      if (cachedData) {
+        if (isMounted) {
+          setData(cachedData);
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/unihan/${encodeURIComponent(char)}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch Unihan data");
+        }
+        const unihanData = await response.json();
+        unihanCache.set(char, unihanData);
+        if (isMounted) {
+          setData(unihanData);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
+    return () => {
+      isMounted = false;
+    };
+  }, [char]);
+
+  return { data, loading, error };
+}
+
 function CharacterTooltip({ character, meaning }) {
-  const decomposition = useMemo(
-    () => decomposeCode(character?.code ?? ""),
-    [character?.code],
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+  const { data: unihanInfo, loading: unihanLoading } = useUnihanData(
+    isTooltipVisible ? character.char : null,
   );
   const tooltipRef = useRef(null);
   const [offset, setOffset] = useState(0);
+
   if (!character) return null;
 
   const clampToViewport = useCallback(() => {
@@ -187,58 +270,64 @@ function CharacterTooltip({ character, meaning }) {
   }, []);
 
   useEffect(() => {
-    window.addEventListener("resize", clampToViewport);
+    if (isTooltipVisible) {
+      window.addEventListener("resize", clampToViewport);
+      requestAnimationFrame(clampToViewport);
+    }
     return () => window.removeEventListener("resize", clampToViewport);
-  }, [clampToViewport]);
+  }, [isTooltipVisible, clampToViewport]);
 
   function handleInteraction() {
-    requestAnimationFrame(clampToViewport);
+    setIsTooltipVisible(true);
   }
-
-  const ariaDescription = decomposition.length
-    ? `${character.char} ${meaning}. Cangjie code ${character.code}: ${decomposition
-        .map((segment) => `${segment.letter} ${segment.glyph} ${segment.name}`)
-        .join(", ")}`
-    : `${character.char} ${meaning}`;
 
   return (
     <span
       className="char cangjie-char"
       tabIndex={0}
-      aria-label={ariaDescription}
       onMouseEnter={handleInteraction}
       onFocus={handleInteraction}
       onTouchStart={handleInteraction}
     >
       {character.char}
-      {decomposition.length ? (
-        <span
-          className="cangjie-tooltip"
-          role="tooltip"
-          ref={tooltipRef}
-          style={{ "--tooltip-shift": `${offset}px` }}
-        >
-          <span className="tooltip-heading">
-            {character.char} · {meaning}
-          </span>
-          <span className="tooltip-code" aria-hidden="true">
-            {decomposition.map((segment, index) => (
-              <kbd key={`code-${segment.letter}-${index}`} className="keycap">
-                {segment.letter}
-              </kbd>
-            ))}
-          </span>
-          <ul>
-            {decomposition.map((segment, index) => (
-              <li key={`${segment.letter}-${index}`}>
-                <span className="component-glyph">{segment.glyph}</span>
-                <kbd className="keycap component-key">{segment.letter}</kbd>
-                <span className="component-name">{segment.name}</span>
-              </li>
-            ))}
-          </ul>
-        </span>
-      ) : null}
+      <span
+        className="cangjie-tooltip"
+        role="tooltip"
+        ref={tooltipRef}
+        style={{ "--tooltip-shift": `${offset}px` }}
+      >
+        <span className="tooltip-heading">{character.char}</span>
+        <div className="tooltip-body">
+          {unihanLoading ? (
+            <div className="loading-spinner"></div>
+          ) : unihanInfo && Object.keys(unihanInfo).length > 0 ? (
+            <>
+              <div className="tooltip-row">
+                <span className="label">Pinyin</span>
+                <span className="value">{unihanInfo.kMandarin}</span>
+              </div>
+              <div className="tooltip-row">
+                <span className="label">Cangjie</span>
+                <span className="value">
+                  <span className="cangjie-code-letters">
+                    {unihanInfo.kCangjie.split("").map((letter, index) => (
+                      <kbd key={index} className="keycap">
+                        {letter}
+                      </kbd>
+                    ))}
+                  </span>
+                  <span className="cangjie-code-components">
+                    ({unihanInfo.kCangjieComponents})
+                  </span>
+                </span>
+              </div>
+              <div className="tooltip-definition">{unihanInfo.kDefinition}</div>
+            </>
+          ) : (
+            <div className="muted">Additional data not available.</div>
+          )}
+        </div>
+      </span>
     </span>
   );
 }
@@ -522,9 +611,7 @@ function TutorApp() {
                     type="text"
                     autoComplete="off"
                     value={input}
-                    onChange={(event) =>
-                      setInput(event.target.value)
-                    }
+                    onChange={(event) => setInput(event.target.value)}
                     disabled={isSubmitting}
                   />
                   <button
