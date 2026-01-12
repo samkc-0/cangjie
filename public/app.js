@@ -597,7 +597,7 @@ function TutorApp() {
                     character={currentCharacter}
                     meaning={currentMeaning}
                   />
-                  <span className="meta">
+                  <span className="meta" style={{ display: "none" }}>
                     {currentMeaning} · {currentIndex + 1}/
                     {currentLesson.characters.length}
                   </span>
