@@ -368,113 +368,7 @@ p {
   outline-offset: 4px;
 }
 
-.cangjie-tooltip {
-  --tooltip-shift: 0px;
-  position: absolute;
-  bottom: calc(100% + 0.8rem);
-  left: 50%;
-  transform: translate(calc(-50% + var(--tooltip-shift)), 0.4rem);
-  opacity: 0;
-  pointer-events: none;
-  padding: 0.55rem 0.7rem;
-  border-radius: var(--radius-sm);
-  background: var(--deep-ink);
-  color: var(--parchment-light);
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  width: min(220px, calc(100vw - 1.5rem));
-  font-size: 0.8rem;
-  transition:
-    opacity 120ms ease,
-    transform 120ms ease;
-  z-index: 10;
-}
 
-.cangjie-tooltip::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 8px 7px 0 7px;
-  border-style: solid;
-  border-color: var(--deep-ink) transparent transparent transparent;
-}
-
-.cangjie-char:hover .cangjie-tooltip,
-.cangjie-char:focus .cangjie-tooltip {
-  opacity: 1;
-  transform: translate(calc(-50% + var(--tooltip-shift)), -0.2rem);
-  pointer-events: auto;
-}
-
-.cangjie-tooltip .tooltip-heading {
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  font-size: 0.9rem;
-}
-
-.cangjie-tooltip .tooltip-code {
-  display: flex;
-  gap: 0.25rem;
-  flex-wrap: wrap;
-  margin-top: 0.35rem;
-}
-
-.cangjie-tooltip li {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.75rem;
-}
-
-.cangjie-tooltip .component-glyph {
-  font-size: 1rem;
-}
-
-.keycap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.2rem;
-  padding: 0.05rem 0.35rem;
-  border-radius: 0.35rem;
-  background: linear-gradient(180deg, #fdfdfd, #d8d8d8);
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 1px 0 rgba(255, 255, 255, 0.6),
-    0 2px 3px rgba(0, 0, 0, 0.2);
-  font-family: "Menlo", "Consolas", "Roboto Mono", ui-monospace, monospace;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--deep-ink);
-  line-height: 1.2;
-}
-
-.cangjie-tooltip .component-key {
-  font-size: 0.75rem;
-}
-
-.cangjie-tooltip .tooltip-code .keycap {
-  font-size: 0.8rem;
-}
-
-.cangjie-tooltip .component-name {
-  color: rgba(255, 255, 255, 0.8);
-  letter-spacing: 0.03em;
-}
-
-.cangjie-tooltip ul {
-  list-style: none;
-  padding: 0;
-  margin: 0.5rem 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.12rem;
-}
 
 .character-display span.meta {
   font-size: 1rem;
@@ -528,7 +422,9 @@ form {
   border-radius: 0;
   width: 100%;
   box-shadow: none;
-  background: var(--parchment-light); /* Ensure background matches the card aesthetic */
+  background: var(
+    --parchment-light
+  ); /* Ensure background matches the card aesthetic */
 }
 
 .drill-input-group input[type="text"]:focus {
@@ -570,12 +466,16 @@ input[type="text"]:focus {
 }
 
 .feedback {
-  margin-top: 1rem;
+  position: fixed;
+  bottom: 4rem; /* Adjusted to be higher than the status bar */
+  left: 50%;
+  transform: translateX(-50%);
   padding: 0.85rem 1.2rem;
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.6);
   font-weight: 600;
   text-align: center;
+  z-index: 1000;
 }
 
 .feedback.success {
@@ -910,4 +810,74 @@ input[type="text"]:focus {
   to {
     transform: rotate(360deg);
   }
+}
+
+.character-detail-view {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  background: var(--parchment-light);
+  border-radius: var(--radius-md);
+}
+
+.character-detail-view .tooltip-heading {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.character-detail-view .tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.character-detail-view .tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.character-detail-view .label {
+  font-weight: 600;
+  color: var(--warm-ink);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.character-detail-view .value {
+  font-weight: 600;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.character-detail-view .cangjie-code-letters {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.character-detail-view .cangjie-code-components {
+  font-size: 1rem;
+  color: var(--warm-ink);
+}
+
+.character-detail-view .tooltip-definition {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--deep-ink);
+  text-align: center;
 }

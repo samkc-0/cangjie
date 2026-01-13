@@ -244,91 +244,63 @@ function useUnihanData(char) {
   return { data, loading, error };
 }
 
-function CharacterTooltip({ character, meaning }) {
-  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
-  const { data: unihanInfo, loading: unihanLoading } = useUnihanData(
-    isTooltipVisible ? character.char : null,
-  );
-  const tooltipRef = useRef(null);
-  const [offset, setOffset] = useState(0);
-
+function CharacterTooltip({ character, setDetailViewActive }) {
   if (!character) return null;
-
-  const clampToViewport = useCallback(() => {
-    if (!tooltipRef.current) return;
-    const rect = tooltipRef.current.getBoundingClientRect();
-    const viewportWidth =
-      window.innerWidth || document.documentElement.clientWidth;
-    const padding = 12;
-    let shift = 0;
-    if (rect.left < padding) {
-      shift = padding - rect.left;
-    } else if (rect.right > viewportWidth - padding) {
-      shift = viewportWidth - padding - rect.right;
-    }
-    setOffset(shift);
-  }, []);
-
-  useEffect(() => {
-    if (isTooltipVisible) {
-      window.addEventListener("resize", clampToViewport);
-      requestAnimationFrame(clampToViewport);
-    }
-    return () => window.removeEventListener("resize", clampToViewport);
-  }, [isTooltipVisible, clampToViewport]);
-
-  function handleInteraction() {
-    setIsTooltipVisible(true);
-  }
 
   return (
     <span
       className="char cangjie-char"
       tabIndex={0}
-      onMouseEnter={handleInteraction}
-      onFocus={handleInteraction}
-      onTouchStart={handleInteraction}
+      onMouseEnter={() => setDetailViewActive(true)}
+      onMouseLeave={() => setDetailViewActive(false)}
     >
       {character.char}
-      <span
-        className="cangjie-tooltip"
-        role="tooltip"
-        ref={tooltipRef}
-        style={{ "--tooltip-shift": `${offset}px` }}
-      >
-        <span className="tooltip-heading">{character.char}</span>
-        <div className="tooltip-body">
-          {unihanLoading ? (
-            <div className="loading-spinner"></div>
-          ) : unihanInfo && Object.keys(unihanInfo).length > 0 ? (
-            <>
-              <div className="tooltip-row">
-                <span className="label">Pinyin</span>
-                <span className="value">{unihanInfo.kMandarin}</span>
-              </div>
-              <div className="tooltip-row">
-                <span className="label">Cangjie</span>
-                <span className="value">
-                  <span className="cangjie-code-letters">
-                    {unihanInfo.kCangjie.split("").map((letter, index) => (
-                      <kbd key={index} className="keycap">
-                        {letter}
-                      </kbd>
-                    ))}
-                  </span>
-                  <span className="cangjie-code-components">
-                    ({unihanInfo.kCangjieComponents})
-                  </span>
-                </span>
-              </div>
-              <div className="tooltip-definition">{unihanInfo.kDefinition}</div>
-            </>
-          ) : (
-            <div className="muted">Additional data not available.</div>
-          )}
-        </div>
-      </span>
     </span>
+  );
+}
+
+function CharacterDetailView({ character, setDetailViewActive }) {
+  const { data: unihanInfo, loading: unihanLoading } = useUnihanData(
+    character ? character.char : null
+  );
+
+  return (
+    <div
+      className="character-detail-view"
+      onMouseLeave={() => setDetailViewActive(false)}
+    >
+      <span className="tooltip-heading">{character.char}</span>
+      <div className="tooltip-body">
+        {unihanLoading ? (
+          <div className="loading-spinner"></div>
+        ) : unihanInfo && Object.keys(unihanInfo).length > 0 ? (
+          <>
+            <div className="tooltip-row">
+              <span className="label">Pinyin</span>
+              <span className="value">{unihanInfo.kMandarin}</span>
+            </div>
+            <div className="tooltip-row">
+              <span className="label">Cangjie</span>
+              <span className="value">
+                <span className="cangjie-code-letters">
+                  {unihanInfo.kCangjie.split("").map((letter, index) => (
+                    <kbd key={index} className="keycap">
+                      {letter}
+                    </kbd>
+                  ))}
+                </span>
+                <span className="cangjie-code-components">
+                  ({unihanInfo.kCangjieComponents})
+                </span>
+              </span>
+            </div>
+            <div className="tooltip-definition">{unihanInfo.kDefinition}</div>
+          </>
+        ) : (
+          <div className="muted">Additional data not available.</div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -350,6 +322,7 @@ function TutorApp() {
   const [locale, setLocale] = useState("en");
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [isHelpOpen, setHelpOpen] = useState(false);
+  const [isDetailViewActive, setDetailViewActive] = useState(false);
 
   const strings = LOCALES[locale];
   const languageLabels = {
@@ -591,53 +564,60 @@ function TutorApp() {
                 ) : null}
               </div>
             ) : currentLesson && currentCharacter ? (
-              <>
-                <div className="drill-input-group">
-                  <div className="character-display">
-                    <CharacterTooltip
-                      character={currentCharacter}
-                      meaning={currentMeaning}
-                    />
-                    <span className="meta" style={{ display: "none" }}>
-                      {currentMeaning} · {currentIndex + 1}/
-                      {currentLesson.characters.length}
-                    </span>
+              isDetailViewActive ? (
+                <CharacterDetailView
+                  character={currentCharacter}
+                  setDetailViewActive={setDetailViewActive}
+                />
+              ) : (
+                <>
+                  <div className="drill-input-group">
+                    <div className="character-display">
+                      <CharacterTooltip
+                        character={currentCharacter}
+                        setDetailViewActive={setDetailViewActive}
+                      />
+                      <span className="meta" style={{ display: "none" }}>
+                        {currentMeaning} · {currentIndex + 1}/
+                        {currentLesson.characters.length}
+                      </span>
+                    </div>
+                    <form onSubmit={handleSubmit}>
+                      <label
+                        style={{
+                          display: "none",
+                          position: "fixed",
+                          top: -100,
+                          left: -100,
+                        }}
+                        htmlFor="cangjie-input"
+                      >
+                        {strings.enterCodeLabel} :j
+                      </label>
+                      <input
+                        id="cangjie-input"
+                        type="text"
+                        autoComplete="off"
+                        value={input}
+                        onChange={(event) => setInput(event.target.value)}
+                        disabled={isSubmitting}
+                      />
+                      <button
+                        type="submit"
+                        className="btn-seal"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? strings.saving : strings.submit}
+                      </button>
+                    </form>
                   </div>
-                  <form onSubmit={handleSubmit}>
-                    <label
-                      style={{
-                        display: "none",
-                        position: "fixed",
-                        top: -100,
-                        left: -100,
-                      }}
-                      htmlFor="cangjie-input"
-                    >
-                      {strings.enterCodeLabel} :j
-                    </label>
-                    <input
-                      id="cangjie-input"
-                      type="text"
-                      autoComplete="off"
-                      value={input}
-                      onChange={(event) => setInput(event.target.value)}
-                      disabled={isSubmitting}
-                    />
-                    <button
-                      type="submit"
-                      className="btn-seal"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? strings.saving : strings.submit}
-                    </button>
-                  </form>
-                </div>
-                {feedback && feedbackMessage ? (
-                  <div className={`feedback ${feedback.type}`}>
-                    {feedbackMessage}
-                  </div>
-                ) : null}
-              </>
+                  {feedback && feedbackMessage ? (
+                    <div className={`feedback ${feedback.type}`}>
+                      {feedbackMessage}
+                    </div>
+                  ) : null}
+                </>
+              )
             ) : (
               <div className="status-block">
                 <h2>{strings.noLessonSelected}</h2>
@@ -782,5 +762,6 @@ function TutorApp() {
     </div>
   );
 }
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(<TutorApp />);
