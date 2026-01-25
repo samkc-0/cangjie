@@ -64,7 +64,6 @@ const LOCALES = {
     enterCodeLabel: "Enter the character:",
     submit: "Submit",
     saving: "Saving…",
-    resetSession: "Reset session",
     loadingTitle: "Loading tutor…",
     loadingSubtitle: "Preparing lessons and progress.",
     errorTitle: "Unable to load data",
@@ -105,7 +104,6 @@ const LOCALES = {
     enterCodeLabel: "輸入漢字：",
     submit: "送出",
     saving: "儲存中…",
-    resetSession: "重新開始",
     loadingTitle: "載入中…",
     loadingSubtitle: "正在準備課程與進度資料。",
     errorTitle: "無法取得資料",
@@ -486,12 +484,7 @@ function TutorApp() {
     }
   }
 
-  function resetProgress() {
-    setCurrentIndex(0);
-    setInput("");
-    setStats({ correct: 0, incorrect: 0, startedAt: null });
-    setFeedback(null);
-  }
+
 
   function handleLocaleChange(nextLocale) {
     if (nextLocale === locale) return;
@@ -616,14 +609,6 @@ function TutorApp() {
           <span className="label">{strings.statsIncorrect}</span>
           <span className="value">{stats.incorrect}</span>
         </div>
-        <button
-          type="button"
-          className="status-reset"
-          onClick={resetProgress}
-          disabled={isSubmitting}
-        >
-          {strings.resetSession}
-        </button>
       </footer>
 
       {isDrawerOpen && (

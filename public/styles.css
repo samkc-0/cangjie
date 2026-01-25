@@ -546,25 +546,7 @@ input[type="text"]:focus {
   letter-spacing: 0.08em;
 }
 
-.status-reset {
-  margin-left: auto;
-  border: none;
-  background: #6b1f1a;
-  color: #fff7ec;
-  padding: 0.35rem 1rem;
-  border-radius: var(--radius-sm);
-  font-family: "EB Garamond", serif;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 1px 3px rgba(0, 0, 0, 0.2);
-}
 
-.status-reset:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 
 .btn-renaissance {
   font-family: Garamond, "EB Garamond", "Cormorant Garamond", serif;
