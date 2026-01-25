@@ -49,7 +49,7 @@ const decomposeCode = (code = "") =>
       name: CANGJIE_COMPONENTS[letter]?.name ?? "Unknown component",
     }));
 
-const HELP_PANEL_ID = "help-panel";
+
 
 const LOCALES = {
   en: {
@@ -92,7 +92,6 @@ const LOCALES = {
     languageEnglish: "EN",
     languageChinese: "中文",
     languageToggleLabel: "Language toggle",
-    helpLabel: "Toggle help menu",
     openDrawer: "Lessons & progress",
     closeDrawer: "Close panel",
   },
@@ -134,7 +133,6 @@ const LOCALES = {
     languageEnglish: "EN",
     languageChinese: "中文",
     languageToggleLabel: "語言切換",
-    helpLabel: "顯示/隱藏說明",
     openDrawer: "課程與進度",
     closeDrawer: "關閉面板",
   },
@@ -321,7 +319,6 @@ function TutorApp() {
   });
   const [locale, setLocale] = useState("en");
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [isHelpOpen, setHelpOpen] = useState(false);
   const [isDetailViewActive, setDetailViewActive] = useState(false);
 
   const strings = LOCALES[locale];
@@ -514,10 +511,6 @@ function TutorApp() {
     closeDrawer();
   }
 
-  function toggleHelp() {
-    setHelpOpen((current) => !current);
-  }
-
   return (
     <div className="app-shell">
       <div className="drill-surface">
@@ -529,25 +522,8 @@ function TutorApp() {
           >
             {strings.openDrawer}
           </button>
-          <button
-            type="button"
-            className={`help-trigger ${isHelpOpen ? "active" : ""}`}
-            aria-label={strings.helpLabel}
-            aria-controls={HELP_PANEL_ID}
-            aria-expanded={isHelpOpen}
-            onClick={toggleHelp}
-          >
-            ?
-          </button>
         </header>
-        {isHelpOpen && (
-          <div className="help-panel" id={HELP_PANEL_ID}>
-            <h1>{strings.title}</h1>
-            <p>{strings.tagline}</p>
-            <h2>{strings.drillHeading}</h2>
-            <p>{strings.drillInstruction}</p>
-          </div>
-        )}
+
         <section className="drill-panel">
           <div className="drill-content">
             {loading ? (
