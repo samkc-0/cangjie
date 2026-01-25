@@ -383,7 +383,7 @@ p {
   display: flex;
   flex-direction: column;
   z-index: 50;
-  background: linear-gradient(180deg, #fdf6e4, #f7ead0);
+  background: linear-gradient(135deg, #fbf3de, #f3d7aa);
 }
 
 .drawer-header {
