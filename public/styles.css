@@ -173,9 +173,9 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "EB Garamond", serif;
+  font-family: system-ui, -apple-system, sans-serif;
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   transition: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   z-index: 2;
@@ -184,8 +184,8 @@ p {
 .checkbox:checked ~ .slider::before {
   transform: translateY(1.9rem);
   content: "中";
-  font-family: "Songti TC", serif;
-  font-size: 0.9rem;
+  font-family: "PingFang TC", "Heiti TC", sans-serif;
+  font-size: 0.85rem;
   background-color: var(--parchment);
 }
 
@@ -199,7 +199,7 @@ p {
   text-align: center;
   color: rgba(255, 255, 255, 0.2);
   font-size: 0.8rem;
-  font-family: "Songti TC", serif;
+  font-family: "PingFang TC", "Heiti TC", sans-serif;
   transition: 0.3s;
 }
 
@@ -207,8 +207,8 @@ p {
   content: "EN";
   bottom: auto;
   top: 0.6rem;
-  font-family: "EB Garamond", serif;
-  font-size: 0.7rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.65rem;
 }
 
 .lesson-grid {
