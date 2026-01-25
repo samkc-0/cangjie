@@ -101,6 +101,23 @@ const Icons = {
       <path d="M6 6l12 12" />
     </svg>
   ),
+  User: () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      strokeWidth="1.25"
+      stroke="currentColor"
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+      <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+    </svg>
+  ),
   Settings: () => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -631,6 +648,14 @@ function TutorApp() {
           </button>
           <button
             type="button"
+            className={`sidebar-action ${activeView === 'profiles' ? 'active' : ''}`}
+            onClick={() => setActiveView("profiles")}
+            aria-label="Profiles"
+          >
+            <Icons.User />
+          </button>
+          <button
+            type="button"
             className={`sidebar-action ${activeView === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveView("settings")}
             aria-label="Settings"
@@ -792,6 +817,18 @@ function TutorApp() {
             <div className="drill-content">
               <div className="status-block">
                 <h2>Settings</h2>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {activeView === 'profiles' && (
+        <div className="drill-surface">
+          <section className="drill-panel">
+            <div className="drill-content">
+              <div className="status-block">
+                <h2>Profiles</h2>
               </div>
             </div>
           </section>
