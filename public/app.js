@@ -103,6 +103,24 @@ const Icons = {
       <path d="M6 6l12 12" />
     </svg>
   ),
+  Menu: () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M4 6l16 0" />
+      <path d="M4 12l16 0" />
+      <path d="M4 18l16 0" />
+    </svg>
+  ),
 };
 
 const LOCALES = {
@@ -554,38 +572,41 @@ function TutorApp() {
 
   return (
     <div className="app-shell">
-      <footer className="status-bar">
-        <div className="status-item">
-          <span className="label">
-            <Icons.Target />
-          </span>
-          <span className="value">{formatPercent(accuracy || 0)}</span>
-        </div>
-        <div className="status-item">
-          <span className="label">
-            <Icons.Check />
-          </span>
-          <span className="value">{stats.correct}</span>
-        </div>
-        <div className="status-item">
-          <span className="label">
-            <Icons.X />
-          </span>
-          <span className="value">{stats.incorrect}</span>
-        </div>
-      </footer>
-
-      <div className="drill-surface">
-        <header className="top-bar">
+      <aside className="status-bar">
+        <nav className="sidebar-menu">
           <button
             type="button"
-            className="drawer-trigger btn-engraved"
+            className="sidebar-action"
             onClick={openDrawer}
+            aria-label={strings.openDrawer}
           >
-            {strings.openDrawer}
+            <Icons.Menu />
           </button>
-        </header>
+        </nav>
 
+        <div className="status-group">
+          <div className="status-item">
+            <span className="label">
+              <Icons.Target />
+            </span>
+            <span className="value">{formatPercent(accuracy || 0)}</span>
+          </div>
+          <div className="status-item">
+            <span className="label">
+              <Icons.Check />
+            </span>
+            <span className="value">{stats.correct}</span>
+          </div>
+          <div className="status-item">
+            <span className="label">
+              <Icons.X />
+            </span>
+            <span className="value">{stats.incorrect}</span>
+          </div>
+        </div>
+      </aside>
+
+      <div className="drill-surface">
         <section className="drill-panel">
           <div className="drill-content">
             {loading ? (

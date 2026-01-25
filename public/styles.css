@@ -519,8 +519,7 @@ input[type="text"]:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  gap: 1.5rem;
+  justify-content: space-between;
   padding: 2rem 0.5rem 3rem;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(14px);
@@ -530,6 +529,44 @@ input[type="text"]:focus {
   font-family: "Songti TC", "Songti SC", "STSong", "SimSun", serif;
   z-index: 10;
   flex-shrink: 0;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sidebar-action {
+  background: transparent;
+  border: none;
+  color: var(--parchment-light);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-action:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+.sidebar-action svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.status-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .status-item {
