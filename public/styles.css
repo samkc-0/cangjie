@@ -63,9 +63,8 @@ body {
 
 .app-shell {
   min-height: 100vh;
-  /* padding: clamp(0.5rem, 2vw, 1.5rem); */
   display: flex;
-  justify-content: center;
+  flex-direction: row;
   align-items: stretch;
   width: 100%;
 }
@@ -516,27 +515,28 @@ input[type="text"]:focus {
 }
 
 .status-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+  width: 12rem;
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 1.2rem;
-  background: linear-gradient(90deg, #d6c7aa, #cab18c);
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2rem;
+  padding: 2.5rem 1.5rem;
+  background: linear-gradient(180deg, #d6c7aa, #cab18c);
   box-shadow:
-    0 -2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    2px 0 8px rgba(0, 0, 0, 0.15),
+    inset -1px 0 0 rgba(255, 255, 255, 0.4);
   font-family: "Songti TC", "Songti SC", "STSong", "SimSun", serif;
-  z-index: 15;
+  z-index: 10;
+  flex-shrink: 0;
 }
 
 .status-item {
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.95rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  font-size: 1rem;
   color: var(--deep-ink);
 }
 
@@ -544,6 +544,14 @@ input[type="text"]:focus {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.status-item .value {
+  font-size: 1.6rem;
+  font-weight: 500;
+  font-family: "EB Garamond", serif;
 }
 
 

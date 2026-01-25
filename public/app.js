@@ -506,6 +506,21 @@ function TutorApp() {
 
   return (
     <div className="app-shell">
+      <footer className="status-bar">
+        <div className="status-item">
+          <span className="label">{strings.statsAccuracy}</span>
+          <span className="value">{formatPercent(accuracy || 0)}</span>
+        </div>
+        <div className="status-item">
+          <span className="label">{strings.statsCorrect}</span>
+          <span className="value">{stats.correct}</span>
+        </div>
+        <div className="status-item">
+          <span className="label">{strings.statsIncorrect}</span>
+          <span className="value">{stats.incorrect}</span>
+        </div>
+      </footer>
+
       <div className="drill-surface">
         <header className="top-bar">
           <button
@@ -595,21 +610,6 @@ function TutorApp() {
           </div>
         </section>
       </div>
-
-      <footer className="status-bar">
-        <div className="status-item">
-          <span className="label">{strings.statsAccuracy}</span>
-          <span className="value">{formatPercent(accuracy || 0)}</span>
-        </div>
-        <div className="status-item">
-          <span className="label">{strings.statsCorrect}</span>
-          <span className="value">{stats.correct}</span>
-        </div>
-        <div className="status-item">
-          <span className="label">{strings.statsIncorrect}</span>
-          <span className="value">{stats.incorrect}</span>
-        </div>
-      </footer>
 
       {isDrawerOpen && (
         <>
