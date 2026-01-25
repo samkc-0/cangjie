@@ -702,19 +702,21 @@ function TutorApp() {
                 className={`lesson-card ${lesson.id === currentLessonId ? "active" : ""}`}
                 onClick={() => handleLessonSelect(lesson.id)}
               >
-                <div className="card-header">
-                  <h3>{getLessonTitle(lesson)}</h3>
-                </div>
                 <div className="card-visual">
                   <div className="card-chars">
-                    {lesson.characters.slice(0, 4).map((c) => c.char).join(" ")}
+                    {lesson.characters.map((c) => c.char).join("")}
                   </div>
                 </div>
-                <div className="card-footer">
-                  <p className="card-desc">{getLessonDescription(lesson)}</p>
-                  <span className="card-stats">
-                    {formattedLessonProgress(lesson.id)}
-                  </span>
+                <div className="card-info">
+                  <div className="card-header">
+                    <h3>{getLessonTitle(lesson)}</h3>
+                  </div>
+                  <div className="card-footer">
+                    <p className="card-desc">{getLessonDescription(lesson)}</p>
+                    <span className="card-stats">
+                      {formattedLessonProgress(lesson.id)}
+                    </span>
+                  </div>
                 </div>
               </button>
             ))}
