@@ -51,6 +51,60 @@ const decomposeCode = (code = "") =>
 
 
 
+const Icons = {
+  Target: () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+      <path d="M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0" />
+      <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+    </svg>
+  ),
+  Check: () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M5 12l5 5l10 -10" />
+    </svg>
+  ),
+  X: () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M18 6l-12 12" />
+      <path d="M6 6l12 12" />
+    </svg>
+  ),
+};
+
 const LOCALES = {
   en: {
     title: "Cangjie Typing Tutor",
@@ -69,9 +123,6 @@ const LOCALES = {
     errorTitle: "Unable to load data",
     errorSubtitle: "Please refresh and try again.",
     noLessonSelected: "Select a lesson to begin.",
-    statsAccuracy: "🎯",
-    statsCorrect: "✅",
-    statsIncorrect: "❌",
     totalSessions: "Total Sessions",
     streak: "Streak",
     bestStreak: "Best Streak",
@@ -109,9 +160,6 @@ const LOCALES = {
     errorTitle: "無法取得資料",
     errorSubtitle: "請重新整理後再試一次。",
     noLessonSelected: "請先選擇課程。",
-    statsAccuracy: "🎯",
-    statsCorrect: "✅",
-    statsIncorrect: "❌",
     totalSessions: "總練習",
     streak: "連勝",
     bestStreak: "最佳連勝",
@@ -508,15 +556,21 @@ function TutorApp() {
     <div className="app-shell">
       <footer className="status-bar">
         <div className="status-item">
-          <span className="label">{strings.statsAccuracy}</span>
+          <span className="label">
+            <Icons.Target />
+          </span>
           <span className="value">{formatPercent(accuracy || 0)}</span>
         </div>
         <div className="status-item">
-          <span className="label">{strings.statsCorrect}</span>
+          <span className="label">
+            <Icons.Check />
+          </span>
           <span className="value">{stats.correct}</span>
         </div>
         <div className="status-item">
-          <span className="label">{strings.statsIncorrect}</span>
+          <span className="label">
+            <Icons.X />
+          </span>
           <span className="value">{stats.incorrect}</span>
         </div>
       </footer>

@@ -515,12 +515,12 @@ input[type="text"]:focus {
 }
 
 .status-bar {
-  width: 6rem;
+  width: 4.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 1.25rem;
+  gap: 1.5rem;
   padding: 2rem 0.5rem 3rem;
   background: linear-gradient(180deg, #d6c7aa, #cab18c);
   box-shadow:
@@ -541,9 +541,15 @@ input[type="text"]:focus {
 }
 
 .status-item .label {
-  font-size: 1.5rem;
-  line-height: 1;
-  opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+}
+
+.status-item .label svg {
+  width: 1.6rem;
+  height: 1.6rem;
 }
 
 .status-item .value {
