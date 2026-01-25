@@ -101,6 +101,43 @@ const Icons = {
       <path d="M6 6l12 12" />
     </svg>
   ),
+  Home: () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      strokeWidth="1.25"
+      stroke="currentColor"
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M5 12l-2 0l9 -9l9 9l-2 0"></path>
+      <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"></path>
+      <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"></path>
+    </svg>
+  ),
+  Book: () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="icon icon-tabler icon-tabler-book-2"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      strokeWidth="2"
+      stroke="currentColor"
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z"></path>
+      <path d="M19 16h-12a2 2 0 0 0 -2 2"></path>
+      <path d="M12 4v16"></path>
+    </svg>
+  ),
   Menu: () => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -158,7 +195,7 @@ const LOCALES = {
     languageEnglish: "EN",
     languageChinese: "中文",
     languageToggleLabel: "Language toggle",
-    openDrawer: "Lessons & progress",
+    openDrawer: "Open lessons and progress panel",
     closeDrawer: "Close panel",
   },
   zh: {
@@ -195,7 +232,7 @@ const LOCALES = {
     languageEnglish: "EN",
     languageChinese: "中文",
     languageToggleLabel: "語言切換",
-    openDrawer: "課程與進度",
+    openDrawer: "打開課程和進度面板",
     closeDrawer: "關閉面板",
   },
 };
@@ -377,7 +414,7 @@ function TutorApp() {
     startedAt: null,
   });
   const [locale, setLocale] = useState("en");
-  const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [activeView, setActiveView] = useState("drills");
   const [isDetailViewActive, setDetailViewActive] = useState(false);
 
   const strings = LOCALES[locale];
@@ -550,17 +587,9 @@ function TutorApp() {
     setLocale(nextLocale);
   }
 
-  function toggleDrawer() {
-    setDrawerOpen((prev) => !prev);
-  }
-
-  function closeDrawer() {
-    setDrawerOpen(false);
-  }
-
   function handleLessonSelect(lessonId) {
     setCurrentLessonId(lessonId);
-    closeDrawer();
+    setActiveView("drills");
   }
 
   return (
@@ -569,11 +598,19 @@ function TutorApp() {
         <nav className="sidebar-menu">
           <button
             type="button"
-            className="sidebar-action"
-            onClick={toggleDrawer}
-            aria-label={strings.openDrawer}
+            className={`sidebar-action ${activeView === 'drills' ? 'active' : ''}`}
+            onClick={() => setActiveView("drills")}
+            aria-label="Home"
           >
-            <Icons.Menu />
+            <Icons.Home />
+          </button>
+          <button
+            type="button"
+            className={`sidebar-action ${activeView === 'lessons' ? 'active' : ''}`}
+            onClick={() => setActiveView("lessons")}
+            aria-label={strings.lessonsHeading}
+          >
+            <Icons.Book />
           </button>
           <LanguageToggle
             locale={locale}
@@ -604,91 +641,91 @@ function TutorApp() {
         </div>
       </aside>
 
-      <div className="drill-surface">
-        <section className="drill-panel">
-          <div className="drill-content">
-            {loading ? (
-              <div className="status-block">
-                <h2>{strings.loadingTitle}</h2>
-                <p>{strings.loadingSubtitle}</p>
-              </div>
-            ) : error ? (
-              <div className="status-block error">
-                <h2>{strings.errorTitle}</h2>
-                <p>{strings.errorSubtitle}</p>
-                {typeof error === "string" ? (
-                  <p className="muted">{error}</p>
-                ) : null}
-              </div>
-            ) : currentLesson && currentCharacter ? (
-              isDetailViewActive ? (
-                <CharacterDetailView
-                  character={currentCharacter}
-                  setDetailViewActive={setDetailViewActive}
-                />
-              ) : (
-                <>
-                  <div className="drill-input-group">
-                    <div className="character-display">
-                      <CharacterTooltip
-                        character={currentCharacter}
-                        setDetailViewActive={setDetailViewActive}
-                      />
-                      <span className="meta" style={{ display: "none" }}>
-                        {currentMeaning} · {currentIndex + 1}/
-                        {currentLesson.characters.length}
-                      </span>
-                    </div>
-                    <form onSubmit={handleSubmit}>
-                      <label
-                        style={{
-                          display: "none",
-                          position: "fixed",
-                          top: -100,
-                          left: -100,
-                        }}
-                        htmlFor="cangjie-input"
-                      >
-                        {strings.enterCodeLabel} :j
-                      </label>
-                      <input
-                        id="cangjie-input"
-                        type="text"
-                        autoComplete="off"
-                        value={input}
-                        onChange={(event) => setInput(event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                      <button
-                        type="submit"
-                        className="btn-seal"
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? strings.saving : strings.submit}
-                      </button>
-                    </form>
-                  </div>
-                  {feedback && feedbackMessage ? (
-                    <div className={`feedback ${feedback.type}`}>
-                      {feedbackMessage}
-                    </div>
+      {activeView === 'drills' && (
+        <div className="drill-surface">
+          <section className="drill-panel">
+            <div className="drill-content">
+              {loading ? (
+                <div className="status-block">
+                  <h2>{strings.loadingTitle}</h2>
+                  <p>{strings.loadingSubtitle}</p>
+                </div>
+              ) : error ? (
+                <div className="status-block error">
+                  <h2>{strings.errorTitle}</h2>
+                  <p>{strings.errorSubtitle}</p>
+                  {typeof error === "string" ? (
+                    <p className="muted">{error}</p>
                   ) : null}
-                </>
-              )
-            ) : (
-              <div className="status-block">
-                <h2>{strings.noLessonSelected}</h2>
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
+                </div>
+              ) : currentLesson && currentCharacter ? (
+                isDetailViewActive ? (
+                  <CharacterDetailView
+                    character={currentCharacter}
+                    setDetailViewActive={setDetailViewActive}
+                  />
+                ) : (
+                  <>
+                    <div className="drill-input-group">
+                      <div className="character-display">
+                        <CharacterTooltip
+                          character={currentCharacter}
+                          setDetailViewActive={setDetailViewActive}
+                        />
+                        <span className="meta" style={{ display: "none" }}>
+                          {currentMeaning} · {currentIndex + 1}/
+                          {currentLesson.characters.length}
+                        </span>
+                      </div>
+                      <form onSubmit={handleSubmit}>
+                        <label
+                          style={{
+                            display: "none",
+                            position: "fixed",
+                            top: -100,
+                            left: -100,
+                          }}
+                          htmlFor="cangjie-input"
+                        >
+                          {strings.enterCodeLabel} :j
+                        </label>
+                        <input
+                          id="cangjie-input"
+                          type="text"
+                          autoComplete="off"
+                          value={input}
+                          onChange={(event) => setInput(event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                        <button
+                          type="submit"
+                          className="btn-seal"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? strings.saving : strings.submit}
+                        </button>
+                      </form>
+                    </div>
+                    {feedback && feedbackMessage ? (
+                      <div className={`feedback ${feedback.type}`}>
+                        {feedbackMessage}
+                      </div>
+                    ) : null}
+                  </>
+                )
+              ) : (
+                <div className="status-block">
+                  <h2>{strings.noLessonSelected}</h2>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
 
-      {isDrawerOpen && (
+      {activeView === 'lessons' && (
         <aside
           className="lesson-gallery"
-          role="dialog"
-          aria-modal="true"
           aria-label={strings.lessonsHeading}
         >
           <div className="drawer-header">
@@ -726,5 +763,6 @@ function TutorApp() {
     </div>
   );
 }
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(<TutorApp />);
