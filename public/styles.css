@@ -515,13 +515,13 @@ input[type="text"]:focus {
 }
 
 .status-bar {
-  width: 12rem;
+  width: 6rem;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
-  gap: 2rem;
-  padding: 2.5rem 1.5rem;
+  gap: 2.5rem;
+  padding: 3rem 0.5rem;
   background: linear-gradient(180deg, #d6c7aa, #cab18c);
   box-shadow:
     2px 0 8px rgba(0, 0, 0, 0.15),
@@ -534,23 +534,21 @@ input[type="text"]:focus {
 .status-item {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.2rem;
   font-size: 1rem;
   color: var(--deep-ink);
 }
 
 .status-item .label {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.8rem;
-  opacity: 0.8;
+  font-size: 1.5rem;
+  line-height: 1;
+  opacity: 1;
 }
 
 .status-item .value {
-  font-size: 1.6rem;
-  font-weight: 500;
+  font-size: 1.2rem;
+  font-weight: 600;
   font-family: "EB Garamond", serif;
 }
 
