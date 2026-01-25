@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import ReactDOM from "react-dom/client";
+import { v4 as uuidv4 } from 'uuid';
 
 const CANGJIE_COMPONENTS = {
   A: { glyph: "日", name: "sun" },
@@ -34,6 +35,85 @@ const CANGJIE_COMPONENTS = {
   X: { glyph: "難", name: "difficulty" },
   Y: { glyph: "卜", name: "divination" },
   Z: { glyph: "重", name: "heavy" },
+};
+
+const getDefaultProfileProgress = () => ({
+  attempts: [],
+  summary: {
+    totalSessions: 0,
+    streak: 0,
+    longestStreak: 0,
+    lessonCompletions: {}
+  }
+});
+
+const getDefaultProfile = (name = 'Default Profile', progress = getDefaultProfileProgress()) => ({
+  id: uuidv4(),
+  name,
+  progress
+});
+
+const PROFILES_STORAGE_KEY = 'cangjie_profiles_data';
+const OLD_PROGRESS_STORAGE_KEY = 'progress'; // Key for old single-user progress in localStorage
+
+const readProfilesData = () => {
+  let profilesData = {
+    profiles: [],
+    lastActiveProfileId: null
+  };
+
+  // Attempt to migrate old single-user progress from localStorage
+  const oldProgressRaw = localStorage.getItem(OLD_PROGRESS_STORAGE_KEY);
+  if (oldProgressRaw) {
+    try {
+      const oldProgress = JSON.parse(oldProgressRaw);
+      if (oldProgress.attempts && oldProgress.summary) {
+        const migratedProfile = getDefaultProfile('Migrated Profile', oldProgress);
+        profilesData.profiles.push(migratedProfile);
+        profilesData.lastActiveProfileId = migratedProfile.id;
+        localStorage.removeItem(OLD_PROGRESS_STORAGE_KEY); // Clean up old data
+        console.log('Migrated old progress from localStorage to new profiles structure.');
+      }
+    } catch (err) {
+      console.warn('Failed to migrate old progress from localStorage:', err.message);
+    }
+  }
+
+  // Load new profiles data
+  const storedDataRaw = localStorage.getItem(PROFILES_STORAGE_KEY);
+  if (storedDataRaw) {
+    try {
+      profilesData = JSON.parse(storedDataRaw);
+    } catch (err) {
+      console.error('Failed to parse profiles data from localStorage, reinitializing...', err);
+      // Fallback to default if parsing fails
+      profilesData = {
+        profiles: [],
+        lastActiveProfileId: null
+      };
+    }
+  }
+
+  // If no profiles after migration/load, create a fresh default one
+  if (profilesData.profiles.length === 0) {
+    const defaultProfile = getDefaultProfile();
+    profilesData.profiles.push(defaultProfile);
+    profilesData.lastActiveProfileId = defaultProfile.id;
+  }
+
+  return profilesData;
+};
+
+const writeProfilesData = (data) => {
+  try {
+    localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(data));
+  } catch (err) {
+    console.error('Failed to write profiles data to localStorage:', err);
+  }
+};
+
+const findProfileById = (profilesData, profileId) => {
+  return profilesData.profiles.find(p => p.id === profileId);
 };
 
 const formatPercent = (value) => `${Math.round((value ?? 0) * 100)}%`;
@@ -434,7 +514,7 @@ function CharacterDetailView({ character, setDetailViewActive }) {
 
 function TutorApp() {
   const [lessons, setLessons] = useState([]);
-  const [progress, setProgress] = useState(null);
+  const [profilesData, setProfilesData] = useState(() => readProfilesData());
   const [currentLessonId, setCurrentLessonId] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [input, setInput] = useState("");
@@ -451,6 +531,18 @@ function TutorApp() {
   const [activeView, setActiveView] = useState("drills");
   const [isDetailViewActive, setDetailViewActive] = useState(false);
 
+  // Derive active profile and its progress
+  const activeProfile = useMemo(
+    () => findProfileById(profilesData, profilesData.lastActiveProfileId),
+    [profilesData]
+  );
+  const progress = activeProfile?.progress;
+
+  // Save profilesData to localStorage whenever it changes
+  useEffect(() => {
+    writeProfilesData(profilesData);
+  }, [profilesData]);
+
   const strings = LOCALES[locale];
   const languageLabels = {
     en: strings.languageEnglish,
@@ -461,17 +553,11 @@ function TutorApp() {
   useEffect(() => {
     async function bootstrap() {
       try {
-        const [lessonRes, progressRes] = await Promise.all([
-          fetch("/api/lessons"),
-          fetch("/api/progress"),
-        ]);
+        const lessonRes = await fetch("/api/lessons");
         if (!lessonRes.ok) throw new Error("Unable to load lessons");
-        if (!progressRes.ok) throw new Error("Unable to load progress");
 
         const lessonPayload = await lessonRes.json();
-        const progressPayload = await progressRes.json();
         setLessons(lessonPayload.lessons);
-        setProgress(progressPayload);
         setCurrentLessonId(
           (current) => current ?? lessonPayload.lessons[0]?.id ?? null,
         );
@@ -491,7 +577,7 @@ function TutorApp() {
     setInput("");
     setFeedback(null);
     setStats({ correct: 0, incorrect: 0, startedAt: null });
-  }, [currentLessonId]);
+  }, [currentLessonId, activeProfile]);
 
   const currentLesson = useMemo(
     () => lessons.find((lesson) => lesson.id === currentLessonId),
@@ -541,7 +627,7 @@ function TutorApp() {
         : null;
 
   async function finalizeLesson(finalStats) {
-    if (!currentLesson) return;
+    if (!currentLesson || !activeProfile) return;
     const totalEntries = finalStats.correct + finalStats.incorrect;
     if (!totalEntries) return;
 
@@ -552,25 +638,65 @@ function TutorApp() {
     const payload = {
       lessonId: currentLesson.id,
       accuracy: finalStats.correct / totalEntries,
-      speed: finalStats.correct / minutes,
+      speed: Number(finalStats.correct / minutes).toFixed(2),
       attempts: totalEntries,
       completedAt: new Date().toISOString(),
     };
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      setProfilesData((prevProfilesData) => {
+        const newProfilesData = { ...prevProfilesData };
+        const profileToUpdate = newProfilesData.profiles.find(
+          (p) => p.id === newProfilesData.lastActiveProfileId,
+        );
+
+        if (profileToUpdate) {
+          const data = profileToUpdate.progress;
+
+          const record = {
+            lessonId: payload.lessonId,
+            accuracy: Number(payload.accuracy),
+            speed: Number(payload.speed),
+            attempts: payload.attempts,
+            completedAt: payload.completedAt,
+          };
+
+          data.attempts.unshift(record);
+          data.attempts = data.attempts.slice(0, 25);
+          data.summary.totalSessions += 1;
+
+          if (!data.summary.lessonCompletions[lessonId]) {
+            data.summary.lessonCompletions[lessonId] = {
+              count: 0,
+              bestAccuracy: 0,
+              bestSpeed: 0,
+            };
+          }
+
+          data.summary.lessonCompletions[lessonId].count += 1;
+          data.summary.lessonCompletions[lessonId].bestAccuracy = Math.max(
+            data.summary.lessonCompletions[lessonId].bestAccuracy,
+            record.accuracy,
+          );
+          data.summary.lessonCompletions[lessonId].bestSpeed = Math.max(
+            data.summary.lessonCompletions[lessonId].bestSpeed,
+            record.speed,
+          );
+
+          const PASSING_ACCURACY = 0.85; // Define or import this constant
+          if (record.accuracy >= PASSING_ACCURACY) {
+            data.summary.streak += 1;
+            data.summary.longestStreak = Math.max(
+              data.summary.longestStreak,
+              data.summary.streak,
+            );
+          } else {
+            data.summary.streak = 0;
+          }
+        }
+        return newProfilesData;
       });
-
-      if (!response.ok) {
-        throw new Error("Unable to save session.");
-      }
-
-      const updated = await response.json();
-      setProgress(updated);
       setFeedback({ type: "success", messageKey: "feedbackSessionSaved" });
     } catch (err) {
       console.error(err);
@@ -827,8 +953,85 @@ function TutorApp() {
         <div className="drill-surface">
           <section className="drill-panel">
             <div className="drill-content">
-              <div className="status-block">
-                <h2>Profiles</h2>
+              <h2>Profiles</h2>
+              <div className="profile-list">
+                {profilesData.profiles.map((profile) => (
+                  <div
+                    key={profile.id}
+                    className={`profile-item ${profile.id === activeProfile?.id ? 'active' : ''}`}
+                    onClick={() => {
+                      setProfilesData((prevProfilesData) => ({
+                        ...prevProfilesData,
+                        lastActiveProfileId: profile.id,
+                      }));
+                      setActiveView('drills');
+                    }}
+                  >
+                    <span>{profile.name}</span>
+                    {profilesData.profiles.length > 1 && ( // Only allow deleting if more than one profile exists
+                      <button
+                        className="btn-seal"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent the profile from being selected
+                          if (window.confirm(`Are you sure you want to delete profile "${profile.name}"?`)) {
+                            setProfilesData((prevProfilesData) => {
+                              const newProfiles = prevProfilesData.profiles.filter(
+                                (p) => p.id !== profile.id,
+                              );
+                              let newActiveProfileId = prevProfilesData.lastActiveProfileId;
+
+                              if (newActiveProfileId === profile.id) {
+                                newActiveProfileId = newProfiles[0]?.id || null;
+                                // If no profiles left, create a default one
+                                if (!newActiveProfileId) {
+                                  const defaultProfile = getDefaultProfile();
+                                  newProfiles.push(defaultProfile);
+                                  newActiveProfileId = defaultProfile.id;
+                                }
+                              }
+
+                              return {
+                                profiles: newProfiles,
+                                lastActiveProfileId: newActiveProfileId,
+                              };
+                            });
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="create-profile-section">
+                <input
+                  type="text"
+                  placeholder="New Profile Name"
+                  id="new-profile-name"
+                />
+                <button
+                  className="btn-renaissance"
+                  onClick={() => {
+                    const newProfileNameInput = document.getElementById('new-profile-name');
+                    const newProfileName = newProfileNameInput.value.trim();
+                    if (newProfileName) {
+                      setProfilesData((prevProfilesData) => {
+                        const newProfile = getDefaultProfile(newProfileName);
+                        return {
+                          profiles: [...prevProfilesData.profiles, newProfile],
+                          lastActiveProfileId: newProfile.id,
+                        };
+                      });
+                      newProfileNameInput.value = ''; // Clear input
+                      setActiveView('drills');
+                    } else {
+                      alert('Profile name cannot be empty.');
+                    }
+                  }}
+                >
+                  Create New Profile
+                </button>
               </div>
             </div>
           </section>

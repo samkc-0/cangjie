@@ -1009,3 +1009,59 @@ input[type="text"]:focus {
   color: var(--deep-ink);
   text-align: center;
 }
+
+/* Profile Management Styles */
+.profile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.profile-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--parchment-light);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.profile-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.profile-item.active {
+  border: 2px solid var(--gilding);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.profile-item span {
+  flex-grow: 1;
+  font-weight: 500;
+}
+
+.profile-item .btn-seal {
+  margin-left: 1rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+}
+
+.create-profile-section {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  align-items: center;
+}
+
+.create-profile-section input[type="text"] {
+  flex-grow: 1;
+  max-width: 300px;
+}
