@@ -557,8 +557,8 @@ function TutorApp() {
     setLocale(nextLocale);
   }
 
-  function openDrawer() {
-    setDrawerOpen(true);
+  function toggleDrawer() {
+    setDrawerOpen((prev) => !prev);
   }
 
   function closeDrawer() {
@@ -577,7 +577,7 @@ function TutorApp() {
           <button
             type="button"
             className="sidebar-action"
-            onClick={openDrawer}
+            onClick={toggleDrawer}
             aria-label={strings.openDrawer}
           >
             <Icons.Menu />
