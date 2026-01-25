@@ -530,6 +530,8 @@ function TutorApp() {
   const [locale, setLocale] = useState("en");
   const [activeView, setActiveView] = useState("drills");
   const [isDetailViewActive, setDetailViewActive] = useState(false);
+  const [isCreatingProfile, setIsCreatingProfile] = useState(false);
+  const [deletingProfileId, setDeletingProfileId] = useState(null);
 
   // Derive active profile and its progress
   const activeProfile = useMemo(
@@ -960,78 +962,121 @@ function TutorApp() {
                     key={profile.id}
                     className={`profile-item ${profile.id === activeProfile?.id ? 'active' : ''}`}
                     onClick={() => {
-                      setProfilesData((prevProfilesData) => ({
-                        ...prevProfilesData,
-                        lastActiveProfileId: profile.id,
-                      }));
-                      setActiveView('drills');
+                      if (deletingProfileId !== profile.id) {
+                        setProfilesData((prevProfilesData) => ({
+                          ...prevProfilesData,
+                          lastActiveProfileId: profile.id,
+                        }));
+                        setActiveView('drills');
+                      }
                     }}
                   >
                     <span>{profile.name}</span>
                     {profilesData.profiles.length > 1 && ( // Only allow deleting if more than one profile exists
-                      <button
-                        className="btn-seal"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent the profile from being selected
-                          if (window.confirm(`Are you sure you want to delete profile "${profile.name}"?`)) {
-                            setProfilesData((prevProfilesData) => {
-                              const newProfiles = prevProfilesData.profiles.filter(
-                                (p) => p.id !== profile.id,
-                              );
-                              let newActiveProfileId = prevProfilesData.lastActiveProfileId;
+                      <div className="profile-actions">
+                        {deletingProfileId === profile.id ? (
+                          <>
+                            <button
+                              className="btn-seal"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setProfilesData((prevProfilesData) => {
+                                  const newProfiles = prevProfilesData.profiles.filter(
+                                    (p) => p.id !== profile.id,
+                                  );
+                                  let newActiveProfileId = prevProfilesData.lastActiveProfileId;
 
-                              if (newActiveProfileId === profile.id) {
-                                newActiveProfileId = newProfiles[0]?.id || null;
-                                // If no profiles left, create a default one
-                                if (!newActiveProfileId) {
-                                  const defaultProfile = getDefaultProfile();
-                                  newProfiles.push(defaultProfile);
-                                  newActiveProfileId = defaultProfile.id;
-                                }
-                              }
+                                  if (newActiveProfileId === profile.id) {
+                                    newActiveProfileId = newProfiles[0]?.id || null;
+                                    if (!newActiveProfileId) {
+                                      const defaultProfile = getDefaultProfile();
+                                      newProfiles.push(defaultProfile);
+                                      newActiveProfileId = defaultProfile.id;
+                                    }
+                                  }
 
-                              return {
-                                profiles: newProfiles,
-                                lastActiveProfileId: newActiveProfileId,
-                              };
-                            });
-                          }
-                        }}
-                      >
-                        Delete
-                      </button>
+                                  return {
+                                    profiles: newProfiles,
+                                    lastActiveProfileId: newActiveProfileId,
+                                  };
+                                });
+                                setDeletingProfileId(null);
+                              }}
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              className="btn-renaissance"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeletingProfileId(null);
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="btn-seal"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingProfileId(profile.id);
+                            }}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
               <div className="create-profile-section">
-                <input
-                  type="text"
-                  placeholder="New Profile Name"
-                  id="new-profile-name"
-                />
-                <button
-                  className="btn-renaissance"
-                  onClick={() => {
-                    const newProfileNameInput = document.getElementById('new-profile-name');
-                    const newProfileName = newProfileNameInput.value.trim();
-                    if (newProfileName) {
-                      setProfilesData((prevProfilesData) => {
-                        const newProfile = getDefaultProfile(newProfileName);
-                        return {
-                          profiles: [...prevProfilesData.profiles, newProfile],
-                          lastActiveProfileId: newProfile.id,
-                        };
-                      });
-                      newProfileNameInput.value = ''; // Clear input
-                      setActiveView('drills');
-                    } else {
-                      alert('Profile name cannot be empty.');
-                    }
-                  }}
-                >
-                  Create New Profile
-                </button>
+                {isCreatingProfile ? (
+                  <div className="inline-form">
+                    <input
+                      type="text"
+                      placeholder="New Profile Name"
+                      id="new-profile-name-inline"
+                      autoFocus
+                    />
+                    <button
+                      className="btn-renaissance"
+                      onClick={() => {
+                        const newProfileNameInput = document.getElementById('new-profile-name-inline');
+                        const newProfileName = newProfileNameInput.value.trim();
+                        if (newProfileName) {
+                          setProfilesData((prevProfilesData) => {
+                            const newProfile = getDefaultProfile(newProfileName);
+                            return {
+                              profiles: [...prevProfilesData.profiles, newProfile],
+                              lastActiveProfileId: newProfile.id,
+                            };
+                          });
+                          setIsCreatingProfile(false);
+                          setActiveView('drills');
+                        } else {
+                          alert('Profile name cannot be empty.');
+                        }
+                      }}
+                    >
+                      Save
+                    </button>
+                    <button
+                      className="btn-seal"
+                      onClick={() => setIsCreatingProfile(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="btn-renaissance"
+                    onClick={() => setIsCreatingProfile(true)}
+                  >
+                    Create Profile
+                  </button>
+                )}
               </div>
             </div>
           </section>

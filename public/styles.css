@@ -1061,7 +1061,86 @@ input[type="text"]:focus {
   align-items: center;
 }
 
-.create-profile-section input[type="text"] {
+.profile-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.inline-form {
+  display: flex;
+  width: 100%;
+  max-width: 400px; /* Limit width to keep it centered and compact */
+  margin: 0 auto; /* Center the form */
+  border-radius: var(--radius-md);
+  overflow: hidden; /* Ensures child elements respect border-radius */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 2px 5px rgba(27, 18, 12, 0.1);
+}
+
+.inline-form input[type="text"] {
   flex-grow: 1;
-  max-width: 300px;
+  border: none;
+  padding: 0.9rem 1rem;
+  background: var(--parchment-light);
+  color: var(--deep-ink);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.inline-form input[type="text"]:focus {
+  outline: none;
+  box-shadow: inset 0 0 5px rgba(107, 31, 26, 0.2);
+}
+
+.inline-form .btn-renaissance,
+.inline-form .btn-seal {
+  margin: 0;
+  border-radius: 0;
+  padding: 0.9rem 1rem;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  box-shadow: none; /* Remove individual button shadows */
+  transition: background 0.2s ease;
+}
+
+.inline-form .btn-renaissance {
+  background: var(--gilding);
+  color: var(--deep-ink);
+}
+
+.inline-form .btn-renaissance:hover {
+  background: #d6b77c;
+}
+
+.inline-form .btn-seal {
+  background: var(--accent);
+}
+
+@media (max-width: 600px) {
+  .create-profile-section {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .inline-form {
+    flex-direction: column;
+    max-width: 100%;
+  }
+  .inline-form input[type="text"],
+  .inline-form .btn-renaissance,
+  .inline-form .btn-seal {
+    width: 100%;
+    border-radius: var(--radius-sm);
+  }
+  .inline-form input[type="text"] {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .inline-form .btn-renaissance {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
 }
