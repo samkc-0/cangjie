@@ -727,58 +727,6 @@ function TutorApp() {
                 ))}
               </div>
             )}
-            <div className="drawer-section">
-              <h2>{strings.progressHeading}</h2>
-              <div className="stats-grid">
-                <div className="stat">
-                  <span className="label">{strings.totalSessions}</span>
-                  <span className="value">
-                    {progress?.summary?.totalSessions ?? 0}
-                  </span>
-                </div>
-                <div className="stat">
-                  <span className="label">{strings.streak}</span>
-                  <span className="value">
-                    {progress?.summary?.streak ?? 0}
-                  </span>
-                </div>
-                <div className="stat">
-                  <span className="label">{strings.bestStreak}</span>
-                  <span className="value">
-                    {progress?.summary?.longestStreak ?? 0}
-                  </span>
-                </div>
-                <div className="stat">
-                  <span className="label">{strings.bestAccuracy}</span>
-                  <span className="value">
-                    {lessonSummary
-                      ? formatPercent(lessonSummary.bestAccuracy)
-                      : "—"}
-                  </span>
-                </div>
-              </div>
-              <h3>{strings.recentSessions}</h3>
-              <div className="history-list">
-                {progress?.attempts?.length ? (
-                  progress.attempts.map((attempt, index) => (
-                    <div
-                      key={`${attempt.completedAt}-${index}`}
-                      className="history-item"
-                    >
-                      <strong>
-                        {getLessonTitle(
-                          lessons.find((l) => l.id === attempt.lessonId),
-                        ) ?? attempt.lessonId}
-                      </strong>
-                      <span>{formatHistoryStats(attempt)}</span>
-                      <span>{formatTimestamp(attempt.completedAt)}</span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="empty-state">{strings.historyEmpty}</p>
-                )}
-              </div>
-            </div>
           </aside>
         </>
       )}
