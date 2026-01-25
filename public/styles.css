@@ -519,9 +519,9 @@ input[type="text"]:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 2.5rem;
-  padding: 3rem 0.5rem;
+  justify-content: flex-end;
+  gap: 1.25rem;
+  padding: 2rem 0.5rem 3rem;
   background: linear-gradient(180deg, #d6c7aa, #cab18c);
   box-shadow:
     2px 0 8px rgba(0, 0, 0, 0.15),
