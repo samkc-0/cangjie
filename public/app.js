@@ -203,23 +203,20 @@ const LOCALES = {
 };
 
 function LanguageToggle({ locale, onChange, labels }) {
+  const isChecked = locale === "zh";
+  const handleToggle = () => onChange(isChecked ? "en" : "zh");
+
   return (
-    <div
-      className="language-toggle"
-      role="group"
-      aria-label={labels.toggleLabel}
-    >
-      {["en", "zh"].map((code) => (
-        <button
-          type="button"
-          key={code}
-          className={`language-button ${locale === code ? "active" : ""}`}
-          onClick={() => onChange(code)}
-          aria-pressed={locale === code}
-        >
-          {labels[code]}
-        </button>
-      ))}
+    <div className="toggle-switch">
+      <label className="switch-label" aria-label={labels.toggleLabel}>
+        <input
+          type="checkbox"
+          className="checkbox"
+          checked={isChecked}
+          onChange={handleToggle}
+        />
+        <span className="slider"></span>
+      </label>
     </div>
   );
 }
@@ -582,6 +579,11 @@ function TutorApp() {
           >
             <Icons.Menu />
           </button>
+          <LanguageToggle
+            locale={locale}
+            onChange={handleLocaleChange}
+            labels={languageLabels}
+          />
         </nav>
 
         <div className="status-group">
@@ -725,13 +727,6 @@ function TutorApp() {
                 ))}
               </div>
             )}
-            <div className="drawer-lang">
-              <LanguageToggle
-                locale={locale}
-                onChange={handleLocaleChange}
-                labels={languageLabels}
-              />
-            </div>
             <div className="drawer-section">
               <h2>{strings.progressHeading}</h2>
               <div className="stats-grid">
