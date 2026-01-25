@@ -522,10 +522,11 @@ input[type="text"]:focus {
   justify-content: flex-end;
   gap: 1.5rem;
   padding: 2rem 0.5rem 3rem;
-  background: linear-gradient(180deg, #7c1c17, #5c1411);
-  box-shadow:
-    2px 0 12px rgba(0, 0, 0, 0.3),
-    inset -1px 0 0 rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
   font-family: "Songti TC", "Songti SC", "STSong", "SimSun", serif;
   z-index: 10;
   flex-shrink: 0;
@@ -545,7 +546,7 @@ input[type="text"]:focus {
   align-items: center;
   justify-content: center;
   color: var(--gilding);
-  opacity: 0.95;
+  opacity: 0.9;
 }
 
 .status-item .label svg {
