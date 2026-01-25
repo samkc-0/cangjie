@@ -213,61 +213,141 @@ p {
 
 .lesson-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  padding: 0 2rem 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 3rem;
+  padding: 3rem;
   max-height: none;
-  overflow-y: visible;
-  box-shadow: none;
+  overflow-y: auto;
+  justify-items: center;
 }
 
-.lesson-button {
+@media (max-width: 600px) {
+  .lesson-grid {
+    grid-template-columns: 1fr;
+    padding: 2rem 1.5rem;
+    gap: 2rem;
+  }
+}
+
+.lesson-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 0.8rem;
   width: 100%;
-  text-align: left;
-  padding: 1.2rem;
-  min-height: 140px;
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(107, 75, 42, 0.15);
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
+  max-width: 280px;
+  aspect-ratio: 2.5 / 3.5;
+  background: #fdf6e4;
+  border: 8px solid #fff;
+  border-radius: 4px;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  text-align: center;
 }
 
-.lesson-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(43, 27, 18, 0.08);
-  background: rgba(255, 255, 255, 0.8);
+.lesson-card:hover {
+  transform: translateY(-8px) rotate(1deg);
+  box-shadow: 
+    0 12px 24px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 2;
 }
 
-.lesson-button .lesson-info h3 {
+.lesson-card.active {
+  border-color: var(--gilding);
+  box-shadow: 
+    0 0 0 4px rgba(201, 168, 106, 0.3),
+    0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+  background: var(--deep-ink);
+  color: var(--parchment);
+  padding: 0.8rem 0.5rem;
+  border-bottom: 2px solid var(--gilding);
+}
+
+.card-header h3 {
   margin: 0;
   font-size: 1.1rem;
+  font-family: "Songti TC", serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.lesson-button .lesson-info p {
+.card-visual {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, #f4ecd8 0%, #e6dcc0 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle pattern for the visual area */
+.card-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(45deg, rgba(0,0,0,0.03) 25%, transparent 25%), 
+    linear-gradient(-45deg, rgba(0,0,0,0.03) 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, rgba(0,0,0,0.03) 75%), 
+    linear-gradient(-45deg, transparent 75%, rgba(0,0,0,0.03) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+.card-chars {
+  font-family: "Songti TC", serif;
+  font-size: 2.5rem;
+  color: var(--ink);
+  opacity: 0.8;
+  z-index: 1;
+  letter-spacing: 0.2em;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  max-height: 80%;
+}
+
+.card-footer {
+  background: #fff;
+  padding: 0.8rem 0.6rem;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.card-desc {
   margin: 0;
-  font-size: 0.95rem;
-  color: rgba(43, 27, 18, 0.75);
-}
-
-.lesson-progress {
   font-size: 0.85rem;
-  color: var(--warm-ink);
-  font-weight: 600;
+  color: #666;
+  font-family: "EB Garamond", serif;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.lesson-button.active {
-  color: var(--deep-ink);
-  background: #f8e6c5;
-  box-shadow: inset 0 0 0 1px rgba(107, 75, 42, 0.4);
-}
-
-.lesson-button.active .lesson-progress {
+.card-stats {
+  font-size: 0.75rem;
   color: var(--accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-top: 1px dashed rgba(0,0,0,0.1);
+  padding-top: 0.4rem;
 }
+
+
 
 .drill-panel {
   flex: 1;
@@ -293,21 +373,15 @@ p {
   cursor: pointer;
 }
 
-.drawer-panel {
+.lesson-gallery {
   position: fixed;
   inset: 0 0 0 4.5rem;
-  transform: none;
-  width: auto;
-  max-height: none;
-  background: linear-gradient(180deg, #fdf6e4, #f7ead0);
-  box-shadow: none;
-  padding: 0;
-  border-radius: 0;
   overflow-y: auto;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
   z-index: 50;
+  background: linear-gradient(180deg, #fdf6e4, #f7ead0);
 }
 
 .drawer-header {
@@ -326,16 +400,21 @@ p {
 }
 
 .lesson-grid {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-tight);
-  max-height: 40vh;
-  overflow-y: auto;
-  padding: 0.5rem 2rem;
-  /* inset realistic box shadow */
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.6);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 3rem;
+  padding: 3rem;
+  max-height: none;
+  overflow-y: visible;
+  justify-items: center;
+}
+
+@media (max-width: 600px) {
+  .lesson-grid {
+    grid-template-columns: 1fr;
+    padding: 2rem 1.5rem;
+    gap: 2rem;
+  }
 }
 
 .drawer-lang {

@@ -49,8 +49,6 @@ const decomposeCode = (code = "") =>
       name: CANGJIE_COMPONENTS[letter]?.name ?? "Unknown component",
     }));
 
-
-
 const Icons = {
   Target: () => (
     <svg
@@ -320,7 +318,7 @@ function CharacterTooltip({ character, setDetailViewActive }) {
 
 function CharacterDetailView({ character, setDetailViewActive }) {
   const { data: unihanInfo, loading: unihanLoading } = useUnihanData(
-    character ? character.char : null
+    character ? character.char : null,
   );
 
   return (
@@ -547,8 +545,6 @@ function TutorApp() {
     }
   }
 
-
-
   function handleLocaleChange(nextLocale) {
     if (nextLocale === locale) return;
     setLocale(nextLocale);
@@ -689,50 +685,44 @@ function TutorApp() {
       </div>
 
       {isDrawerOpen && (
-        <>
-          <button
-            type="button"
-            className="drawer-overlay"
-            onClick={closeDrawer}
-            aria-label={strings.closeDrawer}
-          ></button>
-          <aside
-            className="drawer-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label={strings.openDrawer}
-          >
-            <div className="drawer-header">
-              <h2>{strings.lessonsHeading}</h2>
-            </div>
-            {loading ? (
-              <p className="muted">{strings.loadingSubtitle}</p>
-            ) : (
-              <div className="lesson-grid">
-                {lessons.map((lesson) => (
-                  <button
-                    key={lesson.id}
-                    type="button"
-                    className={`lesson-button btn-engraved ${lesson.id === currentLessonId ? "active" : ""}`}
-                    onClick={() => handleLessonSelect(lesson.id)}
-                  >
-                    <div className="lesson-info">
-                      <h3>{getLessonTitle(lesson)}</h3>
-                      <p>{getLessonDescription(lesson)}</p>
-                    </div>
-                    <span className="lesson-progress">
-                      {formattedLessonProgress(lesson.id)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </aside>
-        </>
+        <aside
+          className="lesson-gallery"
+          role="dialog"
+          aria-modal="true"
+          aria-label={strings.lessonsHeading}
+        >
+          <div className="drawer-header">
+            <h2>{strings.lessonsHeading}</h2>
+          </div>
+          <div className="lesson-grid">
+            {lessons.map((lesson) => (
+              <button
+                key={lesson.id}
+                type="button"
+                className={`lesson-card ${lesson.id === currentLessonId ? "active" : ""}`}
+                onClick={() => handleLessonSelect(lesson.id)}
+              >
+                <div className="card-header">
+                  <h3>{getLessonTitle(lesson)}</h3>
+                </div>
+                <div className="card-visual">
+                  <div className="card-chars">
+                    {lesson.characters.slice(0, 4).map((c) => c.char).join(" ")}
+                  </div>
+                </div>
+                <div className="card-footer">
+                  <p className="card-desc">{getLessonDescription(lesson)}</p>
+                  <span className="card-stats">
+                    {formattedLessonProgress(lesson.id)}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </aside>
       )}
     </div>
   );
 }
-
 
 ReactDOM.createRoot(document.getElementById("root")).render(<TutorApp />);
