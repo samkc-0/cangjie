@@ -702,14 +702,6 @@ function TutorApp() {
           >
             <div className="drawer-header">
               <h2>{strings.lessonsHeading}</h2>
-              <button
-                type="button"
-                className="drawer-close"
-                onClick={closeDrawer}
-                aria-label={strings.closeDrawer}
-              >
-                ×
-              </button>
             </div>
             {loading ? (
               <p className="muted">{strings.loadingSubtitle}</p>
