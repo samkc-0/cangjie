@@ -38,6 +38,8 @@ const CANGJIE_COMPONENTS = {
 };
 
 const getDefaultProfileProgress = () => ({
+  currentGlobalIndex: 0,
+  knownCharacters: [],
   attempts: [],
   summary: {
     totalSessions: 0,
@@ -512,11 +514,83 @@ function CharacterDetailView({ character, setDetailViewActive }) {
   );
 }
 
+function SingleCharDrill({
+  exercise,
+  input,
+  setInput,
+  isSubmitting,
+  inputRef,
+  setDetailViewActive,
+  isDetailViewActive,
+  handleSubmit,
+  strings,
+  feedback,
+  feedbackMessage,
+  currentExerciseIndex,
+  totalExercises,
+}) {
+  const character = exercise.data;
+  const currentMeaning = character ? character.meaning : ""; // Simplify for now, handle locale inside if needed or pass prop
+
+  if (isDetailViewActive) {
+    return (
+      <CharacterDetailView
+        character={character}
+        setDetailViewActive={setDetailViewActive}
+      />
+    );
+  }
+
+  return (
+    <>
+      <div className="drill-input-group">
+        <div className="character-display">
+          <CharacterTooltip
+            character={character}
+            setDetailViewActive={setDetailViewActive}
+          />
+          <span className="meta" style={{ display: "none" }}>
+            {currentMeaning} · {currentExerciseIndex + 1}/{totalExercises}
+          </span>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <label
+            style={{
+              display: "none",
+              position: "fixed",
+              top: -100,
+              left: -100,
+            }}
+            htmlFor="cangjie-input"
+          >
+            {strings.enterCodeLabel} :j
+          </label>
+          <input
+            id="cangjie-input"
+            type="text"
+            ref={inputRef}
+            autoFocus
+            autoComplete="off"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            disabled={isSubmitting}
+          />
+          <button type="submit" className="btn-seal" disabled={isSubmitting}>
+            {isSubmitting ? strings.saving : strings.submit}
+          </button>
+        </form>
+      </div>
+      {feedback && feedbackMessage ? (
+        <div className={`feedback ${feedback.type}`}>{feedbackMessage}</div>
+      ) : null}
+    </>
+  );
+}
+
 function TutorApp() {
   const [lessons, setLessons] = useState([]);
   const [profilesData, setProfilesData] = useState(() => readProfilesData());
-  const [currentLessonId, setCurrentLessonId] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // currentLessonId and currentExerciseIndex are removed, using global index from profile
   const [input, setInput] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [error, setError] = useState(null);
@@ -539,7 +613,27 @@ function TutorApp() {
     () => findProfileById(profilesData, profilesData.lastActiveProfileId),
     [profilesData]
   );
-  const progress = activeProfile?.progress;
+  
+  const progress = useMemo(() => {
+    if (!activeProfile) return null;
+    return {
+      ...activeProfile.progress,
+      currentGlobalIndex: activeProfile.progress.currentGlobalIndex ?? 0,
+      knownCharacters: activeProfile.progress.knownCharacters ?? []
+    };
+  }, [activeProfile]);
+
+  // Flatten all exercises
+  const allExercises = useMemo(() => {
+    if (!lessons.length) return [];
+    return lessons.flatMap(lesson => {
+      const lessonExercises = lesson.exercises || lesson.characters?.map(c => ({ type: 'character', data: c })) || [];
+      return lessonExercises.map(ex => ({
+        ...ex,
+        lessonId: lesson.id
+      }));
+    });
+  }, [lessons]);
 
   // Save profilesData to localStorage whenever it changes
   useEffect(() => {
@@ -561,9 +655,7 @@ function TutorApp() {
 
         const lessonPayload = await lessonRes.json();
         setLessons(lessonPayload.lessons);
-        setCurrentLessonId(
-          (current) => current ?? lessonPayload.lessons[0]?.id ?? null,
-        );
+        // No need to set currentLessonId anymore
       } catch (err) {
         console.error(err);
         setError("Failed to load tutor data. Please refresh.");
@@ -576,17 +668,18 @@ function TutorApp() {
   }, []);
 
   useEffect(() => {
-    setCurrentIndex(0);
     setInput("");
     setFeedback(null);
     setStats({ correct: 0, incorrect: 0, startedAt: null });
-  }, [currentLessonId, activeProfile]);
+  }, [progress?.currentGlobalIndex, activeProfile?.id]); // Reset when exercise advances or profile changes
 
+  const currentExercise = allExercises[progress?.currentGlobalIndex] || null;
   const currentLesson = useMemo(
-    () => lessons.find((lesson) => lesson.id === currentLessonId),
-    [lessons, currentLessonId],
+    () => lessons.find((lesson) => lesson.id === currentExercise?.lessonId),
+    [lessons, currentExercise]
   );
-  const currentCharacter = currentLesson?.characters[currentIndex];
+  
+  // No longer need currentExercises or currentExerciseIndex derived state
 
   // Simple, Zen-like focus effect.
   // When the view is 'drills', and we are not loading, detailing, or submitting: Focus.
@@ -600,7 +693,8 @@ function TutorApp() {
     ) {
       inputRef.current.focus();
     }
-  }, [activeView, loading, isDetailViewActive, isSubmitting, currentCharacter]);
+  }, [activeView, loading, isDetailViewActive, isSubmitting, currentExercise]);
+
   const getLessonTitle = (lesson) =>
     locale === "zh" ? (lesson?.titleZh ?? lesson?.title) : lesson?.title;
   const getLessonDescription = (lesson) =>
@@ -611,11 +705,11 @@ function TutorApp() {
     locale === "zh"
       ? (character?.meaningZh ?? character?.meaning)
       : character?.meaning;
-  const currentMeaning = currentCharacter
-    ? (getMeaning(currentCharacter) ?? "")
-    : "";
-  const lessonSummary = progress?.summary?.lessonCompletions?.[currentLessonId];
-
+  
+  // lessonSummary was previously derived from currentLessonId, but is it used?
+  // It seems only used for formattedLessonProgress which takes an ID.
+  // We can remove this variable if it's not used in the render.
+  
   const attempts = stats.correct + stats.incorrect;
   const accuracy = attempts ? stats.correct / attempts : 0;
   const formattedLessonProgress = (lessonId) => {
@@ -643,118 +737,81 @@ function TutorApp() {
         ? (strings[feedback.messageKey] ?? "")
         : null;
 
-  async function finalizeLesson(finalStats) {
-    if (!currentLesson || !activeProfile) return;
-    const totalEntries = finalStats.correct + finalStats.incorrect;
-    if (!totalEntries) return;
-
-    const minutes = Math.max(
-      (Date.now() - finalStats.startedAt) / 60000,
-      1 / 60,
-    );
-    const payload = {
-      lessonId: currentLesson.id,
-      accuracy: finalStats.correct / totalEntries,
-      speed: Number(finalStats.correct / minutes).toFixed(2),
-      attempts: totalEntries,
-      completedAt: new Date().toISOString(),
-    };
-
-    setIsSubmitting(true);
-    try {
-      setProfilesData((prevProfilesData) => {
-        const newProfilesData = { ...prevProfilesData };
-        const profileToUpdate = newProfilesData.profiles.find(
-          (p) => p.id === newProfilesData.lastActiveProfileId,
-        );
-
-        if (profileToUpdate) {
-          const data = profileToUpdate.progress;
-
-          const record = {
-            lessonId: payload.lessonId,
-            accuracy: Number(payload.accuracy),
-            speed: Number(payload.speed),
-            attempts: payload.attempts,
-            completedAt: payload.completedAt,
-          };
-
-          data.attempts.unshift(record);
-          data.attempts = data.attempts.slice(0, 25);
-          data.summary.totalSessions += 1;
-
-          if (!data.summary.lessonCompletions[lessonId]) {
-            data.summary.lessonCompletions[lessonId] = {
-              count: 0,
-              bestAccuracy: 0,
-              bestSpeed: 0,
-            };
-          }
-
-          data.summary.lessonCompletions[lessonId].count += 1;
-          data.summary.lessonCompletions[lessonId].bestAccuracy = Math.max(
-            data.summary.lessonCompletions[lessonId].bestAccuracy,
-            record.accuracy,
-          );
-          data.summary.lessonCompletions[lessonId].bestSpeed = Math.max(
-            data.summary.lessonCompletions[lessonId].bestSpeed,
-            record.speed,
-          );
-
-          const PASSING_ACCURACY = 0.85; // Define or import this constant
-          if (record.accuracy >= PASSING_ACCURACY) {
-            data.summary.streak += 1;
-            data.summary.longestStreak = Math.max(
-              data.summary.longestStreak,
-              data.summary.streak,
-            );
-          } else {
-            data.summary.streak = 0;
-          }
-        }
-        return newProfilesData;
-      });
-      setFeedback({ type: "success", messageKey: "feedbackSessionSaved" });
-    } catch (err) {
-      console.error(err);
-      setFeedback({ type: "error", messageKey: "feedbackSessionFailed" });
-    } finally {
-      setIsSubmitting(false);
-      setCurrentIndex(0);
-      setInput("");
-      setStats({ correct: 0, incorrect: 0, startedAt: null });
-    }
-  }
-
   function handleSubmit(event) {
     event.preventDefault();
-    if (!currentCharacter) return;
-    const sanitized = input.trim();
-    if (!sanitized) return;
+    if (!currentExercise) return;
 
-    const startedAt = stats.startedAt ?? Date.now();
-    const isCorrect = sanitized === currentCharacter.char;
-    const nextCorrect = stats.correct + (isCorrect ? 1 : 0);
-    const nextIncorrect = stats.incorrect + (isCorrect ? 0 : 1);
-    const nextIndex = isCorrect ? currentIndex + 1 : currentIndex;
+    if (currentExercise.type === 'character') {
+      const character = currentExercise.data;
+      const sanitized = input.trim();
+      if (!sanitized) return;
 
-    setStats({ correct: nextCorrect, incorrect: nextIncorrect, startedAt });
-    setFeedback({
-      type: isCorrect ? "success" : "error",
-      messageKey: isCorrect ? "feedbackCorrect" : "feedbackExpected",
-      expected: isCorrect ? null : currentCharacter.char,
-    });
-    setInput("");
+      const startedAt = stats.startedAt ?? Date.now();
+      const isCorrect = sanitized === character.char;
+      const nextCorrect = stats.correct + (isCorrect ? 1 : 0);
+      const nextIncorrect = stats.incorrect + (isCorrect ? 0 : 1);
+      
+      setStats({ correct: nextCorrect, incorrect: nextIncorrect, startedAt });
+      setFeedback({
+        type: isCorrect ? "success" : "error",
+        messageKey: isCorrect ? "feedbackCorrect" : "feedbackExpected",
+        expected: isCorrect ? null : character.char,
+      });
+      setInput("");
 
-    if (isCorrect) {
-      if (nextIndex >= currentLesson.characters.length) {
-        finalizeLesson({
-          correct: nextCorrect,
-          incorrect: nextIncorrect,
-          startedAt,
+      if (isCorrect) {
+        setProfilesData((prevProfilesData) => {
+          const newProfilesData = { ...prevProfilesData };
+          const profileToUpdate = newProfilesData.profiles.find(
+            (p) => p.id === newProfilesData.lastActiveProfileId,
+          );
+
+          if (profileToUpdate) {
+            const data = profileToUpdate.progress;
+            
+            // 1. Advance global index
+            data.currentGlobalIndex = (data.currentGlobalIndex || 0) + 1;
+
+            // 2. Add to known characters
+            const known = new Set(data.knownCharacters || []);
+            known.add(character.char);
+            data.knownCharacters = Array.from(known);
+
+            // 3. Update lesson stats (initialize if needed)
+            const lessonId = currentExercise.lessonId;
+            if (!data.summary.lessonCompletions[lessonId]) {
+              data.summary.lessonCompletions[lessonId] = {
+                count: 0,
+                bestAccuracy: 0, // We can track accumulated accuracy if needed, or just best
+                bestSpeed: 0
+              };
+            }
+            data.summary.lessonCompletions[lessonId].count += 1;
+            
+            // Update streak
+            data.summary.streak = (data.summary.streak || 0) + 1;
+            data.summary.longestStreak = Math.max(
+              data.summary.longestStreak || 0,
+              data.summary.streak
+            );
+          }
+          return newProfilesData;
         });
+
+        // Reset local stats for the next exercise
+        setStats({ correct: 0, incorrect: 0, startedAt: null });
       } else {
-        setCurrentIndex(nextIndex);
+        // Reset streak on error
+        setProfilesData((prevProfilesData) => {
+           const newProfilesData = { ...prevProfilesData };
+           const profileToUpdate = newProfilesData.profiles.find(
+             (p) => p.id === newProfilesData.lastActiveProfileId,
+           );
+           if (profileToUpdate) {
+             profileToUpdate.progress.summary.streak = 0;
+           }
+           return newProfilesData;
+        });
       }
     }
   }
@@ -765,43 +822,64 @@ function TutorApp() {
   }
 
   function handleLessonSelect(lessonId) {
-    setCurrentLessonId(lessonId);
-    setActiveView("drills");
+    const startIndex = allExercises.findIndex(ex => ex.lessonId === lessonId);
+    if (startIndex !== -1) {
+      setProfilesData((prevProfilesData) => {
+        const newProfilesData = { ...prevProfilesData };
+        const profileToUpdate = newProfilesData.profiles.find(
+          (p) => p.id === newProfilesData.lastActiveProfileId,
+        );
+        if (profileToUpdate) {
+          profileToUpdate.progress.currentGlobalIndex = startIndex;
+        }
+        return newProfilesData;
+      });
+      setActiveView("drills");
+    }
   }
 
   return (
     <div className="app-shell">
       <aside className="status-bar">
+        {/* ... (sidebar menu remains same) ... */}
         <nav className="sidebar-menu">
           <button
             type="button"
             className={`sidebar-action ${activeView === 'drills' ? 'active' : ''}`}
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setActiveView("drills")}
             aria-label="Home"
+            tabIndex="-1"
           >
             <Icons.Home />
           </button>
           <button
             type="button"
             className={`sidebar-action ${activeView === 'lessons' ? 'active' : ''}`}
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setActiveView("lessons")}
             aria-label={strings.lessonsHeading}
+            tabIndex="-1"
           >
             <Icons.Book />
           </button>
           <button
             type="button"
             className={`sidebar-action ${activeView === 'profiles' ? 'active' : ''}`}
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setActiveView("profiles")}
             aria-label="Profiles"
+            tabIndex="-1"
           >
             <Icons.User />
           </button>
           <button
             type="button"
             className={`sidebar-action ${activeView === 'settings' ? 'active' : ''}`}
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setActiveView("settings")}
             aria-label="Settings"
+            tabIndex="-1"
           >
             <Icons.Settings />
           </button>
@@ -827,9 +905,9 @@ function TutorApp() {
           </div>
           <div className="status-item">
             <span className="label">
-              <Icons.X />
+              <Icons.Book />
             </span>
-            <span className="value">{stats.incorrect}</span>
+            <span className="value">{progress?.knownCharacters?.length || 0}</span>
           </div>
         </div>
       </aside>
@@ -851,66 +929,33 @@ function TutorApp() {
                     <p className="muted">{error}</p>
                   ) : null}
                 </div>
-              ) : currentLesson && currentCharacter ? (
-                isDetailViewActive ? (
-                  <CharacterDetailView
-                    character={currentCharacter}
+              ) : currentExercise ? (
+                currentExercise.type === 'character' ? (
+                  <SingleCharDrill
+                    exercise={currentExercise}
+                    input={input}
+                    setInput={setInput}
+                    isSubmitting={isSubmitting}
+                    inputRef={inputRef}
                     setDetailViewActive={setDetailViewActive}
+                    isDetailViewActive={isDetailViewActive}
+                    handleSubmit={handleSubmit}
+                    strings={strings}
+                    feedback={feedback}
+                    feedbackMessage={feedbackMessage}
+                    currentExerciseIndex={progress?.currentGlobalIndex || 0}
+                    totalExercises={allExercises.length}
                   />
                 ) : (
-                  <>
-                    <div className="drill-input-group">
-                      <div className="character-display">
-                        <CharacterTooltip
-                          character={currentCharacter}
-                          setDetailViewActive={setDetailViewActive}
-                        />
-                        <span className="meta" style={{ display: "none" }}>
-                          {currentMeaning} · {currentIndex + 1}/
-                          {currentLesson.characters.length}
-                        </span>
-                      </div>
-                      <form onSubmit={handleSubmit}>
-                        <label
-                          style={{
-                            display: "none",
-                            position: "fixed",
-                            top: -100,
-                            left: -100,
-                          }}
-                          htmlFor="cangjie-input"
-                        >
-                          {strings.enterCodeLabel} :j
-                        </label>
-                        <input
-                          id="cangjie-input"
-                          type="text"
-                          ref={inputRef}
-                          autoFocus
-                          autoComplete="off"
-                          value={input}
-                          onChange={(event) => setInput(event.target.value)}
-                          disabled={isSubmitting}
-                        />
-                        <button
-                          type="submit"
-                          className="btn-seal"
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? strings.saving : strings.submit}
-                        </button>
-                      </form>
-                    </div>
-                    {feedback && feedbackMessage ? (
-                      <div className={`feedback ${feedback.type}`}>
-                        {feedbackMessage}
-                      </div>
-                    ) : null}
-                  </>
+                  <div className="status-block">
+                    <h2>Unknown Drill Type</h2>
+                    <p>This drill type is not supported yet.</p>
+                  </div>
                 )
               ) : (
                 <div className="status-block">
-                  <h2>{strings.noLessonSelected}</h2>
+                  <h2>All Exercises Completed!</h2>
+                  <p>You have finished all available lessons.</p>
                 </div>
               )}
             </div>
@@ -931,12 +976,15 @@ function TutorApp() {
               <button
                 key={lesson.id}
                 type="button"
-                className={`lesson-card ${lesson.id === currentLessonId ? "active" : ""}`}
+                className={`lesson-card ${lesson.id === currentLesson?.id ? "active" : ""}`}
                 onClick={() => handleLessonSelect(lesson.id)}
               >
                 <div className="card-visual">
                   <div className="card-chars">
-                    {lesson.characters.map((c) => c.char).join("")}
+                    {(lesson.exercises || lesson.characters || [])
+                      .filter(e => e.type === 'character' || e.char)
+                      .map((e) => e.data ? e.data.char : e.char)
+                      .join("")}
                   </div>
                 </div>
                 <div className="card-info">
@@ -1105,4 +1153,54 @@ function TutorApp() {
 }
 
 
-ReactDOM.createRoot(document.getElementById("root")).render(<TutorApp />);
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    this.setState({ error, errorInfo });
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="status-block error" style={{ margin: '2rem', textAlign: 'center' }}>
+          <h2>Something went wrong.</h2>
+          <p>The application encountered an unexpected error.</p>
+          <button 
+            className="btn-renaissance" 
+            onClick={() => window.location.reload()}
+            style={{ marginTop: '1rem' }}
+          >
+            Refresh Page
+          </button>
+          {this.state.error && (
+            <details style={{ marginTop: '1rem', textAlign: 'left', opacity: 0.7 }}>
+              <summary>Error Details</summary>
+              <pre style={{ overflow: 'auto', padding: '1rem', background: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>
+                {this.state.error.toString()}
+                <br />
+                {this.state.errorInfo?.componentStack}
+              </pre>
+            </details>
+          )}
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <ErrorBoundary>
+    <TutorApp />
+  </ErrorBoundary>
+);

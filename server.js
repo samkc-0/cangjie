@@ -35,15 +35,15 @@ const lessons = [
     titleZh: '部件基礎',
     description: 'Warm up with the 24 Cangjie radicals and their single-key codes.',
     descriptionZh: '練習 24 個倉頡部件與單鍵代碼。',
-    characters: [
-      { char: '日', meaning: 'sun', meaningZh: '太陽', code: 'A' },
-      { char: '月', meaning: 'moon', meaningZh: '月亮', code: 'B' },
-      { char: '金', meaning: 'metal', meaningZh: '金屬', code: 'C' },
-      { char: '木', meaning: 'wood', meaningZh: '木頭', code: 'D' },
-      { char: '水', meaning: 'water', meaningZh: '流水', code: 'E' },
-      { char: '火', meaning: 'fire', meaningZh: '火焰', code: 'F' },
-      { char: '土', meaning: 'earth', meaningZh: '土地', code: 'G' },
-      { char: '竹', meaning: 'bamboo', meaningZh: '竹子', code: 'H' }
+    exercises: [
+      { type: 'character', data: { char: '日', meaning: 'sun', meaningZh: '太陽', code: 'A' } },
+      { type: 'character', data: { char: '月', meaning: 'moon', meaningZh: '月亮', code: 'B' } },
+      { type: 'character', data: { char: '金', meaning: 'metal', meaningZh: '金屬', code: 'C' } },
+      { type: 'character', data: { char: '木', meaning: 'wood', meaningZh: '木頭', code: 'D' } },
+      { type: 'character', data: { char: '水', meaning: 'water', meaningZh: '流水', code: 'E' } },
+      { type: 'character', data: { char: '火', meaning: 'fire', meaningZh: '火焰', code: 'F' } },
+      { type: 'character', data: { char: '土', meaning: 'earth', meaningZh: '土地', code: 'G' } },
+      { type: 'character', data: { char: '竹', meaning: 'bamboo', meaningZh: '竹子', code: 'H' } }
     ]
   },
   {
@@ -52,15 +52,15 @@ const lessons = [
     titleZh: '簡單字練習',
     description: 'Combine two components to reinforce spatial awareness.',
     descriptionZh: '組合兩個部件，加強空間感。',
-    characters: [
-      { char: '明', meaning: 'bright', meaningZh: '明亮', code: 'AB' },
-      { char: '林', meaning: 'forest', meaningZh: '森林', code: 'DD' },
-      { char: '尖', meaning: 'sharp', meaningZh: '尖銳', code: 'FU' },
-      { char: '朋', meaning: 'friend', meaningZh: '朋友', code: 'BB' },
-      { char: '困', meaning: 'trapped', meaningZh: '困住', code: 'WG' },
-      { char: '沐', meaning: 'bathe', meaningZh: '沐浴', code: 'ED' },
-      { char: '炎', meaning: 'flame', meaningZh: '炎熱', code: 'FF' },
-      { char: '金', meaning: 'metal', meaningZh: '金屬', code: 'C' }
+    exercises: [
+      { type: 'character', data: { char: '明', meaning: 'bright', meaningZh: '明亮', code: 'AB' } },
+      { type: 'character', data: { char: '林', meaning: 'forest', meaningZh: '森林', code: 'DD' } },
+      { type: 'character', data: { char: '尖', meaning: 'sharp', meaningZh: '尖銳', code: 'FU' } },
+      { type: 'character', data: { char: '朋', meaning: 'friend', meaningZh: '朋友', code: 'BB' } },
+      { type: 'character', data: { char: '困', meaning: 'trapped', meaningZh: '困住', code: 'WG' } },
+      { type: 'character', data: { char: '沐', meaning: 'bathe', meaningZh: '沐浴', code: 'ED' } },
+      { type: 'character', data: { char: '炎', meaning: 'flame', meaningZh: '炎熱', code: 'FF' } },
+      { type: 'character', data: { char: '金', meaning: 'metal', meaningZh: '金屬', code: 'C' } }
     ]
   },
   {
@@ -69,12 +69,12 @@ const lessons = [
     titleZh: '短語練習',
     description: 'Type an everyday phrase with varying lengths to improve rhythm.',
     descriptionZh: '輸入日常短語，維持穩定節奏。',
-    characters: [
-      { char: '好', meaning: 'good', meaningZh: '好', code: 'VO' },
-      { char: '學', meaning: 'study', meaningZh: '學習', code: 'IPFD' },
-      { char: '習', meaning: 'practice', meaningZh: '練習', code: 'IFSM' },
-      { char: '打', meaning: 'type', meaningZh: '打字', code: 'QK' },
-      { char: '字', meaning: 'character', meaningZh: '文字', code: 'YJ' }
+    exercises: [
+      { type: 'character', data: { char: '好', meaning: 'good', meaningZh: '好', code: 'VO' } },
+      { type: 'character', data: { char: '學', meaning: 'study', meaningZh: '學習', code: 'IPFD' } },
+      { type: 'character', data: { char: '習', meaning: 'practice', meaningZh: '練習', code: 'IFSM' } },
+      { type: 'character', data: { char: '打', meaning: 'type', meaningZh: '打字', code: 'QK' } },
+      { type: 'character', data: { char: '字', meaning: 'character', meaningZh: '文字', code: 'YJ' } }
     ]
   }
 ];
