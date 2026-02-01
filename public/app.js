@@ -1033,42 +1033,43 @@ function TutorApp() {
               </div>
               <div className="create-profile-section">
                 {isCreatingProfile ? (
-                  <div className="inline-form">
+                  <form
+                    className="inline-form"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const newProfileNameInput = document.getElementById('new-profile-name-inline');
+                      const newProfileName = newProfileNameInput.value.trim();
+                      if (newProfileName) {
+                        setProfilesData((prevProfilesData) => {
+                          const newProfile = getDefaultProfile(newProfileName);
+                          return {
+                            profiles: [...prevProfilesData.profiles, newProfile],
+                            lastActiveProfileId: newProfile.id,
+                          };
+                        });
+                        setIsCreatingProfile(false);
+                      } else {
+                        alert('Profile name cannot be empty.');
+                      }
+                    }}
+                  >
                     <input
                       type="text"
                       placeholder="New Profile Name"
                       id="new-profile-name-inline"
                       autoFocus
                     />
-                    <button
-                      className="btn-renaissance"
-                      onClick={() => {
-                        const newProfileNameInput = document.getElementById('new-profile-name-inline');
-                        const newProfileName = newProfileNameInput.value.trim();
-                        if (newProfileName) {
-                          setProfilesData((prevProfilesData) => {
-                            const newProfile = getDefaultProfile(newProfileName);
-                            return {
-                              profiles: [...prevProfilesData.profiles, newProfile],
-                              lastActiveProfileId: newProfile.id,
-                            };
-                          });
-                          setIsCreatingProfile(false);
-                          // setActiveView('drills'); // Removed setActiveView('drills')
-                        } else {
-                          alert('Profile name cannot be empty.');
-                        }
-                      }}
-                    >
+                    <button type="submit" className="btn-renaissance">
                       Save
                     </button>
                     <button
+                      type="button"
                       className="btn-seal"
                       onClick={() => setIsCreatingProfile(false)}
                     >
                       Cancel
                     </button>
-                  </div>
+                  </form>
                 ) : (
                   <button
                     className="btn-renaissance"
