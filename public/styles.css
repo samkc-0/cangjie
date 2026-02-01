@@ -1017,12 +1017,14 @@ input[type="text"]:focus {
   flex-direction: column;
   gap: 1rem;
   margin-top: 1.5rem;
+  max-width: 640px; /* Align with drill-content width */
+  margin: 1.5rem auto 0 auto; /* Center the list and adjust top margin */
 }
 
 .profile-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center; /* Center content within the profile item */
   background: var(--parchment-light);
   border-radius: var(--radius-md);
   padding: 0.75rem 1rem;
@@ -1042,7 +1044,7 @@ input[type="text"]:focus {
 }
 
 .profile-item span {
-  flex-grow: 1;
+  /* Removed flex-grow: 1 */
   font-weight: 500;
 }
 
@@ -1065,8 +1067,12 @@ input[type="text"]:focus {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  justify-content: flex-end; /* Align buttons to the right */
   /* Ensure consistent height to prevent layout shift */
   min-height: 2.5rem; /* Adjusted based on typical button height with padding */
+  margin-left: auto; /* Push to the right */
+  width: 10.5rem; /* Fixed width to accommodate two buttons and gap */
+  flex-shrink: 0; /* Prevent it from shrinking */
 }
 
 .profile-actions .btn-seal,
