@@ -757,7 +757,6 @@ input[type="text"]:focus {
     transform 120ms ease,
     box-shadow 120ms ease,
     background 120ms ease;
-  margin: 1rem auto 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
