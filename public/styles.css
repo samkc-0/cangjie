@@ -54,7 +54,6 @@ body {
   flex-direction: row;
   align-items: stretch;
   width: 100%;
-  border-radius: var(--radius-lg);
   background: linear-gradient(135deg, #fbf3de, #f3d7aa);
   box-shadow:
     0 20px 45px rgba(43, 27, 18, 0.18),
@@ -65,7 +64,6 @@ body {
 .drill-surface {
   flex: 1;
   width: 100%;
-  border-radius: var(--radius-lg);
   padding: clamp(1rem, 2.5vw, 2.5rem);
   display: flex;
   flex-direction: column;
