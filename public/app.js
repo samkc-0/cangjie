@@ -967,7 +967,7 @@ function TutorApp() {
                           ...prevProfilesData,
                           lastActiveProfileId: profile.id,
                         }));
-                        setActiveView('drills');
+                        // setActiveView('drills'); // Removed setActiveView('drills')
                       }
                     }}
                   >
@@ -1054,7 +1054,7 @@ function TutorApp() {
                             };
                           });
                           setIsCreatingProfile(false);
-                          setActiveView('drills');
+                          // setActiveView('drills'); // Removed setActiveView('drills')
                         } else {
                           alert('Profile name cannot be empty.');
                         }
