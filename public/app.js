@@ -313,6 +313,7 @@ const LOCALES = {
     languageToggleLabel: "Language toggle",
     openDrawer: "Open lessons and progress panel",
     closeDrawer: "Close panel",
+    settingsHeading: "Settings",
   },
   zh: {
     title: "倉頡打字教練",
@@ -350,6 +351,7 @@ const LOCALES = {
     languageToggleLabel: "語言切換",
     openDrawer: "打開課程和進度面板",
     closeDrawer: "關閉面板",
+    settingsHeading: "設定",
   },
 };
 
@@ -640,6 +642,34 @@ function TutorApp() {
     writeProfilesData(profilesData);
   }, [profilesData]);
 
+  // Auto-advance cursor to the first unknown exercise on load/profile switch
+  useEffect(() => {
+    if (!allExercises.length || !activeProfile) return;
+
+    const known = activeProfile.progress.knownCharacters || [];
+    const firstUnknownIndex = allExercises.findIndex(ex => {
+      if (ex.type === 'character') {
+        return !known.includes(ex.data.char);
+      }
+      return true; 
+    });
+
+    const targetIndex = firstUnknownIndex === -1 ? allExercises.length : firstUnknownIndex;
+
+    // Only update if we are not already there.
+    // This runs only on profile switch / lesson load (via activeProfile.id change), so it won't fight manual navigation.
+    if (activeProfile.progress.currentGlobalIndex !== targetIndex) {
+       setProfilesData(prev => {
+          const newProfilesData = { ...prev };
+          const p = newProfilesData.profiles.find(x => x.id === activeProfile.id);
+          if (p) {
+              p.progress.currentGlobalIndex = targetIndex;
+          }
+          return newProfilesData;
+       });
+    }
+  }, [activeProfile?.id, allExercises]);
+
   const strings = LOCALES[locale];
   const languageLabels = {
     en: strings.languageEnglish,
@@ -731,11 +761,12 @@ function TutorApp() {
     }
   };
   const feedbackMessage =
-    feedback && feedback.messageKey === "feedbackExpected" && feedback.expected
+    feedback?.message || // Prefer explicit message
+    (feedback && feedback.messageKey === "feedbackExpected" && feedback.expected
       ? `${strings.feedbackExpected} ${feedback.expected}`
       : feedback
         ? (strings[feedback.messageKey] ?? "")
-        : null;
+        : null);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -746,71 +777,103 @@ function TutorApp() {
       const sanitized = input.trim();
       if (!sanitized) return;
 
-      const startedAt = stats.startedAt ?? Date.now();
       const isCorrect = sanitized === character.char;
-      const nextCorrect = stats.correct + (isCorrect ? 1 : 0);
-      const nextIncorrect = stats.incorrect + (isCorrect ? 0 : 1);
-      
-      setStats({ correct: nextCorrect, incorrect: nextIncorrect, startedAt });
+      console.log(`Submitted: "${sanitized}", Expected: "${character.char}", Correct: ${isCorrect}`);
+
+      // Check for lesson completion before state update (since update is async)
+      let feedbackMsg = null;
+      let feedbackType = isCorrect ? "success" : "error";
+      let expectedChar = isCorrect ? null : character.char;
+      let msgKey = isCorrect ? "feedbackCorrect" : "feedbackExpected";
+
+      if (isCorrect) {
+        const nextIndex = (progress?.currentGlobalIndex || 0) + 1;
+        const nextExercise = allExercises[nextIndex];
+        
+        // If next exercise is in a different lesson (or we finished all), and current was valid
+        if (currentExercise && (!nextExercise || nextExercise.lessonId !== currentExercise.lessonId)) {
+           const completedLesson = lessons.find(l => l.id === currentExercise.lessonId);
+           const title = completedLesson ? (locale === 'zh' ? (completedLesson.titleZh ?? completedLesson.title) : completedLesson.title) : 'Unknown';
+           feedbackMsg = `Finished lesson: ${title}`;
+           // Override standard correct message
+           msgKey = null; 
+        }
+      }
+
       setFeedback({
-        type: isCorrect ? "success" : "error",
-        messageKey: isCorrect ? "feedbackCorrect" : "feedbackExpected",
-        expected: isCorrect ? null : character.char,
+        type: feedbackType,
+        messageKey: msgKey,
+        message: feedbackMsg, // explicit message overrides key
+        expected: expectedChar,
       });
       setInput("");
 
       if (isCorrect) {
         setProfilesData((prevProfilesData) => {
-          const newProfilesData = { ...prevProfilesData };
-          const profileToUpdate = newProfilesData.profiles.find(
-            (p) => p.id === newProfilesData.lastActiveProfileId,
+          const profileIndex = prevProfilesData.profiles.findIndex(
+            (p) => p.id === prevProfilesData.lastActiveProfileId,
           );
 
-          if (profileToUpdate) {
-            const data = profileToUpdate.progress;
-            
-            // 1. Advance global index
-            data.currentGlobalIndex = (data.currentGlobalIndex || 0) + 1;
+          if (profileIndex === -1) return prevProfilesData;
 
-            // 2. Add to known characters
-            const known = new Set(data.knownCharacters || []);
-            known.add(character.char);
-            data.knownCharacters = Array.from(known);
+          const oldProfile = prevProfilesData.profiles[profileIndex];
+          const oldData = oldProfile.progress;
+          
+          // Immutable update of the entire profile structure
+          const known = new Set(oldData.knownCharacters || []);
+          known.add(character.char);
 
-            // 3. Update lesson stats (initialize if needed)
-            const lessonId = currentExercise.lessonId;
-            if (!data.summary.lessonCompletions[lessonId]) {
-              data.summary.lessonCompletions[lessonId] = {
-                count: 0,
-                bestAccuracy: 0, // We can track accumulated accuracy if needed, or just best
-                bestSpeed: 0
-              };
-            }
-            data.summary.lessonCompletions[lessonId].count += 1;
-            
-            // Update streak
-            data.summary.streak = (data.summary.streak || 0) + 1;
-            data.summary.longestStreak = Math.max(
-              data.summary.longestStreak || 0,
-              data.summary.streak
-            );
-          }
-          return newProfilesData;
+          const lessonId = currentExercise.lessonId;
+          const currentLessonCompletion = oldData.summary.lessonCompletions[lessonId] || {
+            count: 0,
+            bestAccuracy: 0,
+            bestSpeed: 0
+          };
+
+          const newData = {
+             ...oldData,
+             currentGlobalIndex: (oldData.currentGlobalIndex || 0) + 1,
+             knownCharacters: Array.from(known),
+             summary: {
+                 ...oldData.summary,
+                 streak: (oldData.summary.streak || 0) + 1,
+                 longestStreak: Math.max(oldData.summary.longestStreak || 0, (oldData.summary.streak || 0) + 1),
+                 lessonCompletions: { 
+                   ...oldData.summary.lessonCompletions,
+                   [lessonId]: {
+                     ...currentLessonCompletion,
+                     count: currentLessonCompletion.count + 1
+                   }
+                 }
+             }
+          };
+
+          const newProfiles = [...prevProfilesData.profiles];
+          newProfiles[profileIndex] = { ...oldProfile, progress: newData };
+
+          return { ...prevProfilesData, profiles: newProfiles };
         });
 
         // Reset local stats for the next exercise
         setStats({ correct: 0, incorrect: 0, startedAt: null });
       } else {
-        // Reset streak on error
+        // Reset streak on error - correctly immutable
         setProfilesData((prevProfilesData) => {
-           const newProfilesData = { ...prevProfilesData };
-           const profileToUpdate = newProfilesData.profiles.find(
-             (p) => p.id === newProfilesData.lastActiveProfileId,
-           );
-           if (profileToUpdate) {
-             profileToUpdate.progress.summary.streak = 0;
-           }
-           return newProfilesData;
+          const profileIndex = prevProfilesData.profiles.findIndex(
+            (p) => p.id === prevProfilesData.lastActiveProfileId,
+          );
+          if (profileIndex === -1) return prevProfilesData;
+
+          const oldProfile = prevProfilesData.profiles[profileIndex];
+          const newProfiles = [...prevProfilesData.profiles];
+          newProfiles[profileIndex] = {
+            ...oldProfile,
+            progress: {
+              ...oldProfile.progress,
+              summary: { ...oldProfile.progress.summary, streak: 0 }
+            }
+          };
+          return { ...prevProfilesData, profiles: newProfiles };
         });
       }
     }
@@ -932,6 +995,7 @@ function TutorApp() {
               ) : currentExercise ? (
                 currentExercise.type === 'character' ? (
                   <SingleCharDrill
+                    key={progress?.currentGlobalIndex}
                     exercise={currentExercise}
                     input={input}
                     setInput={setInput}
@@ -1008,8 +1072,9 @@ function TutorApp() {
         <div className="drill-surface">
           <section className="drill-panel">
             <div className="drill-content">
+              <h2>{strings.settingsHeading}</h2>
               <div className="status-block">
-                <h2>Settings</h2>
+                <p className="muted">General settings will appear here.</p>
               </div>
             </div>
           </section>
