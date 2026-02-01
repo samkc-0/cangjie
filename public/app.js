@@ -512,31 +512,23 @@ function useUnihanData(char) {
   return { data, loading, error };
 }
 
-function CharacterTooltip({ character, setDetailViewActive }) {
+function CharacterTooltip({ character }) {
   if (!character) return null;
 
   return (
-    <span
-      className="char cangjie-char"
-      tabIndex={0}
-      onMouseEnter={() => setDetailViewActive(true)}
-      onMouseLeave={() => setDetailViewActive(false)}
-    >
+    <span className="char cangjie-char">
       {character.char}
     </span>
   );
 }
 
-function CharacterDetailView({ character, setDetailViewActive }) {
+function CharacterDetailView({ character }) {
   const { data: unihanInfo, loading: unihanLoading } = useUnihanData(
     character ? character.char : null,
   );
 
   return (
-    <div
-      className="character-detail-view"
-      onMouseLeave={() => setDetailViewActive(false)}
-    >
+    <div className="character-detail-view">
       <span className="tooltip-heading">{character.char}</span>
       <div className="tooltip-body">
         {unihanLoading ? (
@@ -578,8 +570,9 @@ function SingleCharDrill({
   setInput,
   isSubmitting,
   inputRef,
-  setDetailViewActive,
   isDetailViewActive,
+  setDetailViewActive,
+  onPeek,
   handleSubmit,
   strings,
   feedback,
@@ -588,25 +581,22 @@ function SingleCharDrill({
   totalExercises,
 }) {
   const character = exercise.data;
-  const currentMeaning = character ? character.meaning : ""; // Simplify for now, handle locale inside if needed or pass prop
-
-  if (isDetailViewActive) {
-    return (
-      <CharacterDetailView
-        character={character}
-        setDetailViewActive={setDetailViewActive}
-      />
-    );
-  }
+  const currentMeaning = character ? character.meaning : ""; 
 
   return (
-    <>
-      <div className="drill-input-group">
+    <div 
+      className="drill-container"
+      onMouseEnter={onPeek}
+      onMouseLeave={() => setDetailViewActive(false)}
+    >
+      {isDetailViewActive && (
+        <div className="drill-hint-overlay">
+           <CharacterDetailView character={character} />
+        </div>
+      )}
+      <div className={`drill-input-group ${isDetailViewActive ? 'hinted' : ''}`}>
         <div className="character-display">
-          <CharacterTooltip
-            character={character}
-            setDetailViewActive={setDetailViewActive}
-          />
+          <CharacterTooltip character={character} />
           <span className="meta" style={{ display: "none" }}>
             {currentMeaning} · {currentExerciseIndex + 1}/{totalExercises}
           </span>
@@ -641,7 +631,7 @@ function SingleCharDrill({
       {feedback && feedbackMessage ? (
         <div className={`feedback ${feedback.type}`}>{feedbackMessage}</div>
       ) : null}
-    </>
+    </div>
   );
 }
 
@@ -966,6 +956,47 @@ function TutorApp() {
     setLocale(nextLocale);
   }
 
+  function handlePeek() {
+    setDetailViewActive(true);
+    
+    if (!currentExercise || currentExercise.type !== 'character') return;
+    const char = currentExercise.data.char;
+
+    setProfilesData((prevProfilesData) => {
+      const profileIndex = prevProfilesData.profiles.findIndex(
+        (p) => p.id === prevProfilesData.lastActiveProfileId,
+      );
+
+      if (profileIndex === -1) return prevProfilesData;
+
+      const oldProfile = prevProfilesData.profiles[profileIndex];
+      const oldData = oldProfile.progress;
+      const mastery = { ...(oldData.characterMastery || {}) };
+      
+      // If we don't have mastery data yet, or it's already 0, nothing to reset that implies 'review' more than 'new'
+      // But user asked to mark for review. 
+      // If it exists, reset to 0 (which means 'new'/'forgot').
+      
+      if (mastery[char] && mastery[char].level > 0) {
+         mastery[char] = {
+           ...mastery[char],
+           level: 0,
+           nextReview: Date.now(),
+         };
+         
+         const newData = {
+             ...oldData,
+             characterMastery: mastery,
+         };
+         const newProfiles = [...prevProfilesData.profiles];
+         newProfiles[profileIndex] = { ...oldProfile, progress: newData };
+         return { ...prevProfilesData, profiles: newProfiles };
+      }
+      
+      return prevProfilesData;
+    });
+  }
+
   function handleLessonSelect(lessonId) {
     const startIndex = allExercises.findIndex(ex => ex.lessonId === lessonId);
     if (startIndex !== -1) {
@@ -1083,8 +1114,9 @@ function TutorApp() {
                     setInput={setInput}
                     isSubmitting={isSubmitting}
                     inputRef={inputRef}
-                    setDetailViewActive={setDetailViewActive}
                     isDetailViewActive={isDetailViewActive}
+                    setDetailViewActive={setDetailViewActive}
+                    onPeek={handlePeek}
                     handleSubmit={handleSubmit}
                     strings={strings}
                     feedback={feedback}
