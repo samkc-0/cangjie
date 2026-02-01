@@ -1024,7 +1024,7 @@ input[type="text"]:focus {
 .profile-item {
   display: flex;
   align-items: center;
-  justify-content: center; /* Center content within the profile item */
+  justify-content: space-between;
   background: var(--parchment-light);
   border-radius: var(--radius-md);
   padding: 0.75rem 1rem;
@@ -1044,7 +1044,6 @@ input[type="text"]:focus {
 }
 
 .profile-item span {
-  /* Removed flex-grow: 1 */
   font-weight: 500;
 }
 
