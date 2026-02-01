@@ -30,6 +30,28 @@ const CANGJIE_MAP = {
 
 const lessons = [
   {
+    id: 'sun-power',
+    title: 'The Power of Sun',
+    titleZh: '日的力量',
+    description: 'Master the repetition of the Sun component (A).',
+    descriptionZh: '掌握日部 (A) 的重複輸入。',
+    exercises: [
+      { type: 'character', data: { char: '日', meaning: 'sun', meaningZh: '太陽', code: 'A' } },
+      { type: 'character', data: { char: '昌', meaning: 'prosperous', meaningZh: '昌盛', code: 'AA' } },
+      { type: 'character', data: { char: '晶', meaning: 'crystal', meaningZh: '水晶', code: 'AAA' } },
+      { type: 'character', data: { char: '𣊭', meaning: 'shining', meaningZh: '照耀', code: 'AAAA' } },
+      { type: 'character', data: { char: '一', meaning: 'one', meaningZh: '一', code: 'M' } },
+      { type: 'character', data: { char: '二', meaning: 'two', meaningZh: '二', code: 'MM' } },
+      { type: 'character', data: { char: '三', meaning: 'three', meaningZh: '三', code: 'MMM' } },
+      { type: 'character', data: { char: '旦', meaning: 'dawn', meaningZh: '黎明', code: 'AM' } },
+      { type: 'character', data: { char: '昌', meaning: 'prosperous', meaningZh: '昌盛', code: 'AA' } },
+      { type: 'character', data: { char: '三', meaning: 'three', meaningZh: '三', code: 'MMM' } },
+      { type: 'character', data: { char: '旦', meaning: 'dawn', meaningZh: '黎明', code: 'AM' } },
+      { type: 'character', data: { char: '日', meaning: 'sun', meaningZh: '太陽', code: 'A' } },
+      { type: 'character', data: { char: '一', meaning: 'one', meaningZh: '一', code: 'M' } }
+    ]
+  },
+  {
     id: 'foundations',
     title: 'Component Foundations',
     titleZh: '部件基礎',

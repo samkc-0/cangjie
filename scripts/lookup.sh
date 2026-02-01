@@ -8,7 +8,7 @@ fi
 
 # Convert character to Unicode code point
 char="$1"
-codepoint="U+$(node -e "console.log('$char'.charCodeAt(0).toString(16).toUpperCase())")"
+codepoint="U+$(node -e "console.log('$char'.codePointAt(0).toString(16).toUpperCase())")"
 
 # Unzip and grep for the codepoint, then format as JSON
 unzip -p data/unihan.zip Unihan_Readings.txt Unihan_DictionaryLikeData.txt | grep "$codepoint" | awk -F'\t' '
