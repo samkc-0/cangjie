@@ -236,7 +236,7 @@ const Icons = {
   Book: () => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      class="icon icon-tabler icon-tabler-book-2"
+      className="icon icon-tabler icon-tabler-book-2"
       width="24"
       height="24"
       viewBox="0 0 24 24"
@@ -532,6 +532,7 @@ function TutorApp() {
   const [isDetailViewActive, setDetailViewActive] = useState(false);
   const [isCreatingProfile, setIsCreatingProfile] = useState(false);
   const [deletingProfileId, setDeletingProfileId] = useState(null);
+  const inputRef = useRef(null);
 
   // Derive active profile and its progress
   const activeProfile = useMemo(
@@ -586,6 +587,20 @@ function TutorApp() {
     [lessons, currentLessonId],
   );
   const currentCharacter = currentLesson?.characters[currentIndex];
+
+  // Simple, Zen-like focus effect.
+  // When the view is 'drills', and we are not loading, detailing, or submitting: Focus.
+  useEffect(() => {
+    if (
+      activeView === 'drills' &&
+      !loading &&
+      !isDetailViewActive &&
+      !isSubmitting &&
+      inputRef.current
+    ) {
+      inputRef.current.focus();
+    }
+  }, [activeView, loading, isDetailViewActive, isSubmitting, currentCharacter]);
   const getLessonTitle = (lesson) =>
     locale === "zh" ? (lesson?.titleZh ?? lesson?.title) : lesson?.title;
   const getLessonDescription = (lesson) =>
@@ -870,6 +885,8 @@ function TutorApp() {
                         <input
                           id="cangjie-input"
                           type="text"
+                          ref={inputRef}
+                          autoFocus
                           autoComplete="off"
                           value={input}
                           onChange={(event) => setInput(event.target.value)}
