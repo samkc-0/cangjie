@@ -40,6 +40,7 @@ const CANGJIE_COMPONENTS = {
 const getDefaultProfileProgress = () => ({
   currentGlobalIndex: 0,
   knownCharacters: [],
+  characterMastery: {}, // { [char]: { firstLearned, nextReview, level } }
   attempts: [],
   summary: {
     totalSessions: 0,
@@ -70,7 +71,11 @@ const readProfilesData = () => {
     try {
       const oldProgress = JSON.parse(oldProgressRaw);
       if (oldProgress.attempts && oldProgress.summary) {
-        const migratedProfile = getDefaultProfile('Migrated Profile', oldProgress);
+        const migratedProgress = {
+          ...getDefaultProfileProgress(),
+          ...oldProgress
+        };
+        const migratedProfile = getDefaultProfile('Migrated Profile', migratedProgress);
         profilesData.profiles.push(migratedProfile);
         profilesData.lastActiveProfileId = migratedProfile.id;
         localStorage.removeItem(OLD_PROGRESS_STORAGE_KEY); // Clean up old data
@@ -113,6 +118,15 @@ const writeProfilesData = (data) => {
     console.error('Failed to write profiles data to localStorage:', err);
   }
 };
+
+const SRS_INTERVALS = [
+  0,               // Level 0 (not learned)
+  4 * 60 * 60 * 1000,       // Level 1: 4 hours
+  24 * 60 * 60 * 1000,      // Level 2: 24 hours
+  3 * 24 * 60 * 60 * 1000,  // Level 3: 3 days
+  7 * 24 * 60 * 60 * 1000,  // Level 4: 7 days
+  30 * 24 * 60 * 60 * 1000, // Level 5: 30 days
+];
 
 const findProfileById = (profilesData, profileId) => {
   return profilesData.profiles.find(p => p.id === profileId);
@@ -272,6 +286,40 @@ const Icons = {
       <path d="M4 18l16 0" />
     </svg>
   ),
+  Clock: () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+      <path d="M12 7v5l3 3" />
+    </svg>
+  ),
+  Plus: () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 5l0 14" />
+      <path d="M5 12l14 0" />
+    </svg>
+  ),
 };
 
 const LOCALES = {
@@ -301,7 +349,8 @@ const LOCALES = {
     historySpeed: "Speed",
     historySpeedUnit: "chars/min",
     historyEmpty: "Complete a lesson to see history.",
-    lessonNew: "New lesson",
+    lessonNotStarted: "Not started",
+    lessonCompleted: "Completed",
     lessonProgress: (count, accuracy) =>
       `${count} completions · best ${formatPercent(accuracy)}`,
     feedbackCorrect: "Correct! Keep going.",
@@ -314,6 +363,9 @@ const LOCALES = {
     openDrawer: "Open lessons and progress panel",
     closeDrawer: "Close panel",
     settingsHeading: "Settings",
+    reviewsDue: "Reviews Due",
+    newToday: "New Today",
+    totalKnown: "Total Known",
   },
   zh: {
     title: "倉頡打字教練",
@@ -339,7 +391,8 @@ const LOCALES = {
     historySpeed: "速度",
     historySpeedUnit: "字/分",
     historyEmpty: "完成一堂課即可看到歷史紀錄。",
-    lessonNew: "新課程",
+    lessonNotStarted: "尚未開始",
+    lessonCompleted: "已完成",
     lessonProgress: (count, accuracy) =>
       `完成 ${count} 次 · 最佳 ${formatPercent(accuracy)}`,
     feedbackCorrect: "答對了，繼續！",
@@ -352,6 +405,9 @@ const LOCALES = {
     openDrawer: "打開課程和進度面板",
     closeDrawer: "關閉面板",
     settingsHeading: "設定",
+    reviewsDue: "待複習",
+    newToday: "今日新字",
+    totalKnown: "總掌握字數",
   },
 };
 
@@ -736,16 +792,25 @@ function TutorApp() {
       ? (character?.meaningZh ?? character?.meaning)
       : character?.meaning;
   
-  // lessonSummary was previously derived from currentLessonId, but is it used?
-  // It seems only used for formattedLessonProgress which takes an ID.
-  // We can remove this variable if it's not used in the render.
-  
+  const now = Date.now();
+  const todayStart = new Date().setHours(0, 0, 0, 0);
+
+  const statsCalculated = useMemo(() => {
+    const mastery = progress?.characterMastery || {};
+    const values = Object.values(mastery);
+    
+    return {
+      reviewsDue: values.filter(m => m.nextReview <= now).length,
+      newToday: values.filter(m => new Date(m.firstLearned).setHours(0, 0, 0, 0) === todayStart).length,
+      totalKnown: Object.keys(mastery).length
+    };
+  }, [progress?.characterMastery, now, todayStart]);
+
   const attempts = stats.correct + stats.incorrect;
   const accuracy = attempts ? stats.correct / attempts : 0;
   const formattedLessonProgress = (lessonId) => {
     const summary = progress?.summary?.lessonCompletions?.[lessonId];
-    if (!summary) return strings.lessonNew;
-    return strings.lessonProgress(summary.count, summary.bestAccuracy);
+    return summary && summary.count > 0 ? strings.lessonCompleted : strings.lessonNotStarted;
   };
   const formatHistoryStats = (attempt) =>
     `${strings.historyAccuracy} ${formatPercent(attempt.accuracy)} · ${strings.historySpeed} ${formatNumber(
@@ -818,8 +883,24 @@ function TutorApp() {
 
           const oldProfile = prevProfilesData.profiles[profileIndex];
           const oldData = oldProfile.progress;
+          const now = Date.now();
           
-          // Immutable update of the entire profile structure
+          // Mastery tracking
+          const mastery = { ...(oldData.characterMastery || {}) };
+          const charState = mastery[character.char] || {
+            firstLearned: now,
+            level: 0,
+            nextReview: now
+          };
+
+          const newLevel = Math.min(charState.level + 1, SRS_INTERVALS.length - 1);
+          mastery[character.char] = {
+            ...charState,
+            level: newLevel,
+            lastPracticed: now,
+            nextReview: now + SRS_INTERVALS[newLevel]
+          };
+
           const known = new Set(oldData.knownCharacters || []);
           known.add(character.char);
 
@@ -834,6 +915,7 @@ function TutorApp() {
              ...oldData,
              currentGlobalIndex: (oldData.currentGlobalIndex || 0) + 1,
              knownCharacters: Array.from(known),
+             characterMastery: mastery,
              summary: {
                  ...oldData.summary,
                  streak: (oldData.summary.streak || 0) + 1,
@@ -954,23 +1036,23 @@ function TutorApp() {
         </nav>
 
         <div className="status-group">
-          <div className="status-item">
+          <div className="status-item" title={strings.reviewsDue}>
             <span className="label">
-              <Icons.Target />
+              <Icons.Clock />
             </span>
-            <span className="value">{formatPercent(accuracy || 0)}</span>
+            <span className="value">{statsCalculated.reviewsDue}</span>
           </div>
-          <div className="status-item">
+          <div className="status-item" title={strings.newToday}>
             <span className="label">
-              <Icons.Check />
+              <Icons.Plus />
             </span>
-            <span className="value">{stats.correct}</span>
+            <span className="value">{statsCalculated.newToday}</span>
           </div>
-          <div className="status-item">
+          <div className="status-item" title={strings.totalKnown}>
             <span className="label">
               <Icons.Book />
             </span>
-            <span className="value">{progress?.knownCharacters?.length || 0}</span>
+            <span className="value">{statsCalculated.totalKnown}</span>
           </div>
         </div>
       </aside>
