@@ -559,9 +559,6 @@ input[type="text"]:focus {
     0 0 0 2px rgba(107, 31, 26, 0.2);
 }
 
-#cangjie-input {
-  text-transform: uppercase;
-}
 
 .feedback {
   position: fixed;
@@ -1051,7 +1048,7 @@ input[type="text"]:focus {
 }
 
 .profile-item .btn-seal {
-  margin-left: 1rem;
+  /* margin-left: 1rem; Removed to rely on profile-actions gap */
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
 }
@@ -1069,6 +1066,26 @@ input[type="text"]:focus {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  /* Ensure consistent height to prevent layout shift */
+  min-height: 2.5rem; /* Adjusted based on typical button height with padding */
+}
+
+.profile-actions .btn-seal,
+.profile-actions .btn-renaissance {
+  padding: 0.4rem 0.8rem; /* Smaller padding for more compact buttons */
+  font-size: 0.85rem; /* Smaller font size */
+  line-height: 1; /* Ensure consistent height */
+  height: 2.5rem; /* Fixed height for consistency */
+  width: 5rem; /* Explicitly set width for consistent sizing */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Specific rule for the drill input */
+#cangjie-input {
+  text-transform: uppercase;
 }
 
 .inline-form {
