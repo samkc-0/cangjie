@@ -656,6 +656,16 @@ function SentenceDrill({
 }) {
   const text = exercise.data.text;
   const currentMeaning = exercise.data.meaning || ""; 
+  const textChars = useMemo(() => Array.from(text), [text]);
+  const typedCount = Math.min(Array.from(input).length, textChars.length);
+  const isComplete = input === text;
+  const currentIndex = typedCount < textChars.length ? typedCount : -1;
+
+  useEffect(() => {
+    if (isComplete && !isSubmitting) {
+      handleSubmit({ preventDefault: () => {} });
+    }
+  }, [isComplete, isSubmitting, handleSubmit]);
 
   return (
     <div className="drill-container">
@@ -667,10 +677,10 @@ function SentenceDrill({
         )}
         <div className="drill-input-content">
           <div className="character-display sentence-display">
-            {text.split('').map((char, index) => (
+            {textChars.map((char, index) => (
                <span 
                  key={index} 
-                 className="char cangjie-char"
+                 className={`char cangjie-char ${index < typedCount ? 'typed' : 'untyped'} ${index === currentIndex ? 'current' : ''}`}
                  onMouseEnter={() => {
                    if (onPeek) onPeek(char);
                  }}
@@ -683,33 +693,28 @@ function SentenceDrill({
               {currentMeaning}
             </span>
           </div>
-          <form onSubmit={handleSubmit}>
-            <label
-              style={{
-                display: "none",
-                position: "fixed",
-                top: -100,
-                left: -100,
-              }}
-              htmlFor="cangjie-input"
-            >
-              {strings.enterCodeLabel}
-            </label>
-            <input
-              id="cangjie-input"
-              type="text"
-              ref={inputRef}
-              autoFocus
-              autoComplete="off"
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              disabled={isSubmitting}
-              placeholder={text}
-            />
-            <button type="submit" className="btn-seal" disabled={isSubmitting}>
-              {isSubmitting ? strings.saving : strings.submit}
-            </button>
-          </form>
+          <label
+            style={{
+              display: "none",
+              position: "fixed",
+              top: -100,
+              left: -100,
+            }}
+            htmlFor="cangjie-input"
+          >
+            {strings.enterCodeLabel}
+          </label>
+          <input
+            id="cangjie-input"
+            type="text"
+            className="sentence-hidden-input"
+            ref={inputRef}
+            autoFocus
+            autoComplete="off"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            disabled={isSubmitting}
+          />
         </div>
       </div>
       {feedback && feedbackMessage ? (
@@ -1259,20 +1264,31 @@ function TutorApp() {
           </div>
           <div className="lesson-grid">
             {lessons.map((lesson) => (
-              <button
-                key={lesson.id}
-                type="button"
-                className={`lesson-card ${lesson.id === currentLesson?.id ? "active" : ""}`}
-                onClick={() => handleLessonSelect(lesson.id)}
-              >
-                <div className="card-visual">
-                  <div className="card-chars">
-                    {(lesson.exercises || lesson.characters || [])
-                      .filter(e => e.type === 'character' || e.char)
-                      .map((e) => e.data ? e.data.char : e.char)
-                      .join("")}
-                  </div>
-                </div>
+              (() => {
+                const exercises = lesson.exercises || lesson.characters || [];
+                const sentenceExercise = exercises.find(
+                  (e) => e.type === 'sentence' || e.data?.text || e.text
+                );
+                const isSentenceLesson = Boolean(sentenceExercise);
+                const cardText = isSentenceLesson
+                  ? (sentenceExercise?.data?.text || sentenceExercise?.text || "")
+                  : exercises
+                    .filter(e => e.type === 'character' || e.char)
+                    .map((e) => e.data ? e.data.char : e.char)
+                    .join("");
+
+                return (
+                  <button
+                    key={lesson.id}
+                    type="button"
+                    className={`lesson-card ${isSentenceLesson ? "sentence-card" : ""} ${lesson.id === currentLesson?.id ? "active" : ""}`}
+                    onClick={() => handleLessonSelect(lesson.id)}
+                  >
+                    <div className="card-visual">
+                      <div className="card-chars">
+                        {cardText}
+                      </div>
+                    </div>
                 <div className="card-info">
                   <div className="card-header">
                     <h3>{getLessonTitle(lesson)}</h3>
@@ -1284,7 +1300,9 @@ function TutorApp() {
                     </span>
                   </div>
                 </div>
-              </button>
+                  </button>
+                );
+              })()
             ))}
           </div>
         </aside>

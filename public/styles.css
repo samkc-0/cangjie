@@ -276,6 +276,58 @@ p {
   pointer-events: none;
 }
 
+.lesson-card.sentence-card {
+  background: linear-gradient(150deg, #f5efe2 0%, #efe2c8 100%);
+  border: 1px solid rgba(92, 64, 32, 0.15);
+  box-shadow:
+    0 14px 24px rgba(32, 22, 12, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.lesson-card.sentence-card .card-visual {
+  justify-content: center;
+  align-items: center;
+  opacity: 0.9;
+}
+
+.lesson-card.sentence-card .card-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(88, 58, 28, 0.08),
+      rgba(88, 58, 28, 0.08) 1px,
+      transparent 1px,
+      transparent 22px
+    );
+  opacity: 0.6;
+}
+
+.lesson-card.sentence-card .card-chars {
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  letter-spacing: 0.02em;
+  font-size: 1rem;
+  font-family: "EB Garamond", "Songti TC", serif;
+  line-height: 1.6;
+  max-height: 100%;
+  overflow: hidden;
+  z-index: 1;
+  color: rgba(27, 18, 12, 0.8);
+  text-align: left;
+}
+
+.lesson-card.sentence-card .card-info {
+  background: linear-gradient(
+    to top,
+    rgba(34, 22, 12, 0.94) 0%,
+    rgba(34, 22, 12, 0.68) 40%,
+    transparent 100%
+  );
+}
+
 .card-chars {
   font-family: "Songti TC", "Songti SC", "SimSun", serif;
   font-size: 1.2rem;
@@ -497,7 +549,26 @@ p {
 }
 
 .sentence-display .char {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  line-height: 1.6;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.sentence-display .char.typed {
+  opacity: 1;
+}
+
+.sentence-display .char.untyped {
+  opacity: 0;
+}
+
+.sentence-display .char.current {
+  opacity: 0.35;
+  color: var(--accent-dark);
+  background: rgba(201, 168, 106, 0.25);
+  border-radius: 6px;
+  padding: 0.05rem 0.15rem;
 }
 
 .sentence-display .meta {
@@ -525,6 +596,17 @@ p {
 .character-display span.meta {
   font-size: 1rem;
   color: var(--warm-ink);
+}
+
+.sentence-hidden-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  pointer-events: none;
 }
 
 .status-block {
