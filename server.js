@@ -30,33 +30,11 @@ const CANGJIE_MAP = {
 
 const lessons = [
   {
-    id: 'sun-power',
-    title: 'The Power of Sun',
-    titleZh: '日的力量',
-    description: 'Master the repetition of the Sun component (A).',
-    descriptionZh: '掌握日部 (A) 的重複輸入。',
-    exercises: [
-      { type: 'character', data: { char: '日', meaning: 'sun', meaningZh: '太陽', code: 'A' } },
-      { type: 'character', data: { char: '昌', meaning: 'prosperous', meaningZh: '昌盛', code: 'AA' } },
-      { type: 'character', data: { char: '晶', meaning: 'crystal', meaningZh: '水晶', code: 'AAA' } },
-      { type: 'character', data: { char: '𣊭', meaning: 'shining', meaningZh: '照耀', code: 'AAAA' } },
-      { type: 'character', data: { char: '一', meaning: 'one', meaningZh: '一', code: 'M' } },
-      { type: 'character', data: { char: '二', meaning: 'two', meaningZh: '二', code: 'MM' } },
-      { type: 'character', data: { char: '三', meaning: 'three', meaningZh: '三', code: 'MMM' } },
-      { type: 'character', data: { char: '旦', meaning: 'dawn', meaningZh: '黎明', code: 'AM' } },
-      { type: 'character', data: { char: '昌', meaning: 'prosperous', meaningZh: '昌盛', code: 'AA' } },
-      { type: 'character', data: { char: '三', meaning: 'three', meaningZh: '三', code: 'MMM' } },
-      { type: 'character', data: { char: '旦', meaning: 'dawn', meaningZh: '黎明', code: 'AM' } },
-      { type: 'character', data: { char: '日', meaning: 'sun', meaningZh: '太陽', code: 'A' } },
-      { type: 'character', data: { char: '一', meaning: 'one', meaningZh: '一', code: 'M' } }
-    ]
-  },
-  {
-    id: 'foundations',
-    title: 'Component Foundations',
-    titleZh: '部件基礎',
-    description: 'Warm up with the 24 Cangjie radicals and their single-key codes.',
-    descriptionZh: '練習 24 個倉頡部件與單鍵代碼。',
+    id: 'roots-philosophy',
+    title: 'The Elements',
+    titleZh: '哲學部首',
+    description: 'The seven philosophical elements that form the foundation of the universe.',
+    descriptionZh: '構成宇宙基礎的七大哲學元素。',
     exercises: [
       { type: 'character', data: { char: '日', meaning: 'sun', meaningZh: '太陽', code: 'A' } },
       { type: 'character', data: { char: '月', meaning: 'moon', meaningZh: '月亮', code: 'B' } },
@@ -65,38 +43,136 @@ const lessons = [
       { type: 'character', data: { char: '水', meaning: 'water', meaningZh: '流水', code: 'E' } },
       { type: 'character', data: { char: '火', meaning: 'fire', meaningZh: '火焰', code: 'F' } },
       { type: 'character', data: { char: '土', meaning: 'earth', meaningZh: '土地', code: 'G' } },
-      { type: 'character', data: { char: '竹', meaning: 'bamboo', meaningZh: '竹子', code: 'H' } }
+      { type: 'character', data: { char: '明', meaning: 'bright', meaningZh: '明亮', code: 'AB' } },
+      { type: 'character', data: { char: '林', meaning: 'forest', meaningZh: '森林', code: 'DD' } },
+      { type: 'character', data: { char: '炎', meaning: 'flame', meaningZh: '炎熱', code: 'FF' } },
+      { type: 'character', data: { char: '圭', meaning: 'jade tablet', meaningZh: '圭璧', code: 'GG' } },
+      { type: 'sentence', data: { text: '日月', meaning: 'Sun and Moon' } },
+      { type: 'sentence', data: { text: '水火', meaning: 'Water and Fire' } },
+      { type: 'sentence', data: { text: '土木', meaning: 'Construction (Earth & Wood)' } }
     ]
   },
   {
-    id: 'simple-characters',
-    title: 'Simple Characters',
-    titleZh: '簡單字練習',
-    description: 'Combine two components to reinforce spatial awareness.',
-    descriptionZh: '組合兩個部件，加強空間感。',
+    id: 'roots-strokes',
+    title: 'The Strokes',
+    titleZh: '筆畫部首',
+    description: 'Basic strokes and simple shapes.',
+    descriptionZh: '基本筆畫與簡單形狀。',
+    exercises: [
+      { type: 'character', data: { char: '竹', meaning: 'bamboo', meaningZh: '竹子', code: 'H' } },
+      { type: 'character', data: { char: '戈', meaning: 'spear', meaningZh: '戈矛', code: 'I' } },
+      { type: 'character', data: { char: '十', meaning: 'ten', meaningZh: '十', code: 'J' } },
+      { type: 'character', data: { char: '大', meaning: 'big', meaningZh: '大', code: 'K' } },
+      { type: 'character', data: { char: '中', meaning: 'middle', meaningZh: '中間', code: 'L' } },
+      { type: 'character', data: { char: '一', meaning: 'one', meaningZh: '一', code: 'M' } },
+      { type: 'character', data: { char: '弓', meaning: 'bow', meaningZh: '弓箭', code: 'N' } },
+      { type: 'character', data: { char: '旦', meaning: 'dawn', meaningZh: '黎明', code: 'AM' } },
+      { type: 'character', data: { char: '本', meaning: 'root/origin', meaningZh: '根本', code: 'DM' } },
+      { type: 'character', data: { char: '末', meaning: 'end/tip', meaningZh: '末端', code: 'DJ' } },
+      { type: 'sentence', data: { text: '一日', meaning: 'One day' } },
+      { type: 'sentence', data: { text: '十大', meaning: 'Ten Big' } },
+      { type: 'sentence', data: { text: '大火', meaning: 'Big Fire' } }
+    ]
+  },
+  {
+    id: 'roots-body',
+    title: 'The Body',
+    titleZh: '人體部首',
+    description: 'Parts of the human body and actions.',
+    descriptionZh: '人體部位與動作。',
+    exercises: [
+      { type: 'character', data: { char: '人', meaning: 'person', meaningZh: '人', code: 'O' } },
+      { type: 'character', data: { char: '心', meaning: 'heart', meaningZh: '心臟', code: 'P' } },
+      { type: 'character', data: { char: '手', meaning: 'hand', meaningZh: '手', code: 'Q' } },
+      { type: 'character', data: { char: '口', meaning: 'mouth', meaningZh: '嘴巴', code: 'R' } },
+      { type: 'character', data: { char: '从', meaning: 'follow', meaningZh: '跟從', code: 'OO' } },
+      { type: 'character', data: { char: '品', meaning: 'goods/grade', meaningZh: '物品', code: 'RRR' } },
+      { type: 'character', data: { char: '休', meaning: 'rest', meaningZh: '休息', code: 'OD' } },
+      { type: 'character', data: { char: '什', meaning: 'ten/mixed', meaningZh: '什錦', code: 'OJ' } },
+      { type: 'sentence', data: { text: '人口', meaning: 'Population' } },
+      { type: 'sentence', data: { text: '人心', meaning: 'Human Heart' } },
+      { type: 'sentence', data: { text: '手工', meaning: 'Handwork' } }
+    ]
+  },
+  {
+    id: 'roots-shapes',
+    title: 'The Shapes',
+    titleZh: '形狀部首',
+    description: 'Abstract shapes and nature.',
+    descriptionZh: '抽象形狀與自然。',
+    exercises: [
+      { type: 'character', data: { char: '尸', meaning: 'corpse/body', meaningZh: '尸體', code: 'S' } },
+      { type: 'character', data: { char: '廿', meaning: 'twenty', meaningZh: '二十', code: 'T' } },
+      { type: 'character', data: { char: '山', meaning: 'mountain', meaningZh: '山', code: 'U' } },
+      { type: 'character', data: { char: '女', meaning: 'woman', meaningZh: '女人', code: 'V' } },
+      { type: 'character', data: { char: '田', meaning: 'field', meaningZh: '田地', code: 'W' } },
+      { type: 'character', data: { char: '出', meaning: 'go out', meaningZh: '出去', code: 'UU' } },
+      { type: 'character', data: { char: '困', meaning: 'trapped', meaningZh: '困住', code: 'WD' } },
+      { type: 'character', data: { char: '回', meaning: 'return', meaningZh: '回來', code: 'WR' } },
+      { type: 'character', data: { char: '因', meaning: 'cause', meaningZh: '原因', code: 'WK' } },
+      { type: 'sentence', data: { text: '出口', meaning: 'Exit' } },
+      { type: 'sentence', data: { text: '山水', meaning: 'Landscape' } },
+      { type: 'sentence', data: { text: '女人', meaning: 'Woman' } }
+    ]
+  },
+  {
+    id: 'roots-special',
+    title: 'Special Roots',
+    titleZh: '特殊部首',
+    description: 'The final, more abstract roots.',
+    descriptionZh: '最後的抽象部首。',
+    exercises: [
+      { type: 'character', data: { char: '卜', meaning: 'divination', meaningZh: '占卜', code: 'Y' } },
+      { type: 'character', data: { char: '难', meaning: 'difficult', meaningZh: '困難', code: 'X' } }, // Key X
+      { type: 'character', data: { char: '重', meaning: 'heavy', meaningZh: '重要', code: 'Z' } }, // Key Z
+      { type: 'character', data: { char: '卜', meaning: 'divination', meaningZh: '占卜', code: 'Y' } }, // Drill Y
+      { type: 'sentence', data: { text: '卜口', meaning: 'Divination Mouth (Nonsense)' } }
+    ]
+  },
+  {
+    id: 'rule-lr',
+    title: 'Rule: Left | Right',
+    titleZh: '法則：左右分體',
+    description: 'Characters split clearly into left and right parts.',
+    descriptionZh: '左右結構分明的字。',
     exercises: [
       { type: 'character', data: { char: '明', meaning: 'bright', meaningZh: '明亮', code: 'AB' } },
       { type: 'character', data: { char: '林', meaning: 'forest', meaningZh: '森林', code: 'DD' } },
-      { type: 'character', data: { char: '尖', meaning: 'sharp', meaningZh: '尖銳', code: 'FU' } },
-      { type: 'character', data: { char: '朋', meaning: 'friend', meaningZh: '朋友', code: 'BB' } },
-      { type: 'character', data: { char: '困', meaning: 'trapped', meaningZh: '困住', code: 'WG' } },
-      { type: 'character', data: { char: '沐', meaning: 'bathe', meaningZh: '沐浴', code: 'ED' } },
-      { type: 'character', data: { char: '炎', meaning: 'flame', meaningZh: '炎熱', code: 'FF' } },
-      { type: 'character', data: { char: '金', meaning: 'metal', meaningZh: '金屬', code: 'C' } }
+      { type: 'character', data: { char: '休', meaning: 'rest', meaningZh: '休息', code: 'OD' } },
+      { type: 'character', data: { char: '什', meaning: 'ten', meaningZh: '什', code: 'OJ' } },
+      { type: 'character', data: { char: '好', meaning: 'good', meaningZh: '好', code: 'VO' } },
+      { type: 'sentence', data: { text: '明林', meaning: 'Bright Forest' } },
+      { type: 'sentence', data: { text: '好人', meaning: 'Good Person' } }
     ]
   },
   {
-    id: 'phrase',
-    title: 'Short Phrase Drill',
-    titleZh: '短語練習',
-    description: 'Type an everyday phrase with varying lengths to improve rhythm.',
-    descriptionZh: '輸入日常短語，維持穩定節奏。',
+    id: 'rule-tb',
+    title: 'Rule: Top / Bottom',
+    titleZh: '法則：上下分體',
+    description: 'Characters stacked vertically.',
+    descriptionZh: '上下堆疊的字。',
     exercises: [
-      { type: 'character', data: { char: '好', meaning: 'good', meaningZh: '好', code: 'VO' } },
-      { type: 'character', data: { char: '學', meaning: 'study', meaningZh: '學習', code: 'IPFD' } },
-      { type: 'character', data: { char: '習', meaning: 'practice', meaningZh: '練習', code: 'IFSM' } },
-      { type: 'character', data: { char: '打', meaning: 'type', meaningZh: '打字', code: 'QK' } },
-      { type: 'character', data: { char: '字', meaning: 'character', meaningZh: '文字', code: 'YJ' } }
+      { type: 'character', data: { char: '旦', meaning: 'dawn', meaningZh: '黎明', code: 'AM' } },
+      { type: 'character', data: { char: '杳', meaning: 'obscure', meaningZh: '杳渺', code: 'DA' } },
+      { type: 'character', data: { char: '呆', meaning: 'dull', meaningZh: '發呆', code: 'RD' } },
+      { type: 'character', data: { char: '杏', meaning: 'apricot', meaningZh: '杏仁', code: 'DR' } },
+      { type: 'character', data: { char: '炎', meaning: 'flame', meaningZh: '炎熱', code: 'FF' } },
+      { type: 'sentence', data: { text: '杏林', meaning: 'Apricot Forest' } }
+    ]
+  },
+  {
+    id: 'rule-enclosure',
+    title: 'Rule: Enclosure',
+    titleZh: '法則：外內結構',
+    description: 'Type the outside shape first, then the inside.',
+    descriptionZh: '先打外框，再打裡面。',
+    exercises: [
+      { type: 'character', data: { char: '田', meaning: 'field', meaningZh: '田地', code: 'W' } },
+      { type: 'character', data: { char: '困', meaning: 'trapped', meaningZh: '困住', code: 'WD' } },
+      { type: 'character', data: { char: '回', meaning: 'return', meaningZh: '回來', code: 'WR' } },
+      { type: 'character', data: { char: '因', meaning: 'cause', meaningZh: '原因', code: 'WK' } },
+      { type: 'sentence', data: { text: '困人', meaning: 'Trapped Person' } },
+      { type: 'sentence', data: { text: '回国', meaning: 'Return to Country (Simplified)', code: 'WRWIM' } } 
     ]
   }
 ];

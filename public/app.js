@@ -589,44 +589,128 @@ function SingleCharDrill({
       onMouseEnter={onPeek}
       onMouseLeave={() => setDetailViewActive(false)}
     >
-      {isDetailViewActive && (
-        <div className="drill-hint-overlay">
-           <CharacterDetailView character={character} />
-        </div>
-      )}
       <div className={`drill-input-group ${isDetailViewActive ? 'hinted' : ''}`}>
-        <div className="character-display">
-          <CharacterTooltip character={character} />
-          <span className="meta" style={{ display: "none" }}>
-            {currentMeaning} · {currentExerciseIndex + 1}/{totalExercises}
-          </span>
+        {isDetailViewActive && (
+          <div className="drill-hint-overlay">
+             <CharacterDetailView character={character} />
+          </div>
+        )}
+        <div className="drill-input-content">
+          <div className="character-display">
+            <CharacterTooltip character={character} />
+            <span className="meta" style={{ display: "none" }}>
+              {currentMeaning} · {currentExerciseIndex + 1}/{totalExercises}
+            </span>
+          </div>
+          <form onSubmit={handleSubmit}>
+            <label
+              style={{
+                display: "none",
+                position: "fixed",
+                top: -100,
+                left: -100,
+              }}
+              htmlFor="cangjie-input"
+            >
+              {strings.enterCodeLabel} :j
+            </label>
+            <input
+              id="cangjie-input"
+              type="text"
+              ref={inputRef}
+              autoFocus
+              autoComplete="off"
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              disabled={isSubmitting}
+            />
+            <button type="submit" className="btn-seal" disabled={isSubmitting}>
+              {isSubmitting ? strings.saving : strings.submit}
+            </button>
+          </form>
         </div>
-        <form onSubmit={handleSubmit}>
-          <label
-            style={{
-              display: "none",
-              position: "fixed",
-              top: -100,
-              left: -100,
-            }}
-            htmlFor="cangjie-input"
-          >
-            {strings.enterCodeLabel} :j
-          </label>
-          <input
-            id="cangjie-input"
-            type="text"
-            ref={inputRef}
-            autoFocus
-            autoComplete="off"
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            disabled={isSubmitting}
-          />
-          <button type="submit" className="btn-seal" disabled={isSubmitting}>
-            {isSubmitting ? strings.saving : strings.submit}
-          </button>
-        </form>
+      </div>
+      {feedback && feedbackMessage ? (
+        <div className={`feedback ${feedback.type}`}>{feedbackMessage}</div>
+      ) : null}
+    </div>
+  );
+}
+
+function SentenceDrill({
+  exercise,
+  input,
+  setInput,
+  isSubmitting,
+  inputRef,
+  isDetailViewActive,
+  setDetailViewActive,
+  onPeek,
+  handleSubmit,
+  strings,
+  feedback,
+  feedbackMessage,
+  currentExerciseIndex,
+  totalExercises,
+  setHoveredChar // New prop to pass back which char is hovered
+}) {
+  const text = exercise.data.text;
+  const currentMeaning = exercise.data.meaning || ""; 
+
+  return (
+    <div className="drill-container">
+      <div className={`drill-input-group ${isDetailViewActive ? 'hinted' : ''}`}>
+        {isDetailViewActive && (
+          <div className="drill-hint-overlay">
+             <CharacterDetailView character={{ char: isDetailViewActive }} />
+          </div>
+        )}
+        <div className="drill-input-content">
+          <div className="character-display sentence-display">
+            {text.split('').map((char, index) => (
+               <span 
+                 key={index} 
+                 className="char cangjie-char"
+                 onMouseEnter={() => {
+                   if (onPeek) onPeek(char);
+                 }}
+                 onMouseLeave={() => setDetailViewActive(false)}
+               >
+                 {char}
+               </span>
+            ))}
+            <span className="meta" style={{ display: "block", marginTop: '1rem' }}>
+              {currentMeaning}
+            </span>
+          </div>
+          <form onSubmit={handleSubmit}>
+            <label
+              style={{
+                display: "none",
+                position: "fixed",
+                top: -100,
+                left: -100,
+              }}
+              htmlFor="cangjie-input"
+            >
+              {strings.enterCodeLabel}
+            </label>
+            <input
+              id="cangjie-input"
+              type="text"
+              ref={inputRef}
+              autoFocus
+              autoComplete="off"
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              disabled={isSubmitting}
+              placeholder={text}
+            />
+            <button type="submit" className="btn-seal" disabled={isSubmitting}>
+              {isSubmitting ? strings.saving : strings.submit}
+            </button>
+          </form>
+        </div>
       </div>
       {feedback && feedbackMessage ? (
         <div className={`feedback ${feedback.type}`}>{feedbackMessage}</div>
@@ -827,18 +911,18 @@ function TutorApp() {
     event.preventDefault();
     if (!currentExercise) return;
 
-    if (currentExercise.type === 'character') {
-      const character = currentExercise.data;
+    if (currentExercise.type === 'character' || currentExercise.type === 'sentence') {
       const sanitized = input.trim();
       if (!sanitized) return;
 
-      const isCorrect = sanitized === character.char;
-      console.log(`Submitted: "${sanitized}", Expected: "${character.char}", Correct: ${isCorrect}`);
+      const targetText = currentExercise.type === 'character' ? currentExercise.data.char : currentExercise.data.text;
+      const isCorrect = sanitized === targetText;
+      console.log(`Submitted: "${sanitized}", Expected: "${targetText}", Correct: ${isCorrect}`);
 
       // Check for lesson completion before state update (since update is async)
       let feedbackMsg = null;
       let feedbackType = isCorrect ? "success" : "error";
-      let expectedChar = isCorrect ? null : character.char;
+      let expectedChar = isCorrect ? null : targetText;
       let msgKey = isCorrect ? "feedbackCorrect" : "feedbackExpected";
 
       if (isCorrect) {
@@ -877,22 +961,28 @@ function TutorApp() {
           
           // Mastery tracking
           const mastery = { ...(oldData.characterMastery || {}) };
-          const charState = mastery[character.char] || {
-            firstLearned: now,
-            level: 0,
-            nextReview: now
-          };
-
-          const newLevel = Math.min(charState.level + 1, SRS_INTERVALS.length - 1);
-          mastery[character.char] = {
-            ...charState,
-            level: newLevel,
-            lastPracticed: now,
-            nextReview: now + SRS_INTERVALS[newLevel]
-          };
-
+          const charsToUpdate = currentExercise.type === 'sentence' 
+              ? currentExercise.data.text.split('') 
+              : [currentExercise.data.char];
+          
           const known = new Set(oldData.knownCharacters || []);
-          known.add(character.char);
+
+          charsToUpdate.forEach(char => {
+            const charState = mastery[char] || {
+              firstLearned: now,
+              level: 0,
+              nextReview: now
+            };
+
+            const newLevel = Math.min(charState.level + 1, SRS_INTERVALS.length - 1);
+            mastery[char] = {
+              ...charState,
+              level: newLevel,
+              lastPracticed: now,
+              nextReview: now + SRS_INTERVALS[newLevel]
+            };
+            known.add(char);
+          });
 
           const lessonId = currentExercise.lessonId;
           const currentLessonCompletion = oldData.summary.lessonCompletions[lessonId] || {
@@ -1108,6 +1198,24 @@ function TutorApp() {
               ) : currentExercise ? (
                 currentExercise.type === 'character' ? (
                   <SingleCharDrill
+                    key={progress?.currentGlobalIndex}
+                    exercise={currentExercise}
+                    input={input}
+                    setInput={setInput}
+                    isSubmitting={isSubmitting}
+                    inputRef={inputRef}
+                    isDetailViewActive={isDetailViewActive}
+                    setDetailViewActive={setDetailViewActive}
+                    onPeek={handlePeek}
+                    handleSubmit={handleSubmit}
+                    strings={strings}
+                    feedback={feedback}
+                    feedbackMessage={feedbackMessage}
+                    currentExerciseIndex={progress?.currentGlobalIndex || 0}
+                    totalExercises={allExercises.length}
+                  />
+                ) : currentExercise.type === 'sentence' ? (
+                  <SentenceDrill
                     key={progress?.currentGlobalIndex}
                     exercise={currentExercise}
                     input={input}
