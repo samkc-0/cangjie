@@ -609,6 +609,12 @@ p {
   pointer-events: none;
 }
 
+.sentence-forge {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
 .status-block {
   background: rgba(255, 255, 255, 0.72);
   border-radius: var(--radius-md);

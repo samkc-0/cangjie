@@ -333,6 +333,18 @@ const LOCALES = {
     drillInstruction:
       "Type the matching character to advance through the sequence.",
     enterCodeLabel: "Enter the character:",
+    sentencePrompt: "Forge the phrase one glyph at a time.",
+    sentenceProgressLabel: "Glyph",
+    sentenceInputLabel: "Commit the glyph",
+    sentenceInputPlaceholder: "Cangjie code or character",
+    sentenceHintLabel: "Hint",
+    sentenceCorrect: "Glyph locked. Keep going.",
+    sentenceIncorrect: "Not quite. Try again.",
+    sentenceHintReady: "Hint unlocked.",
+    sentenceLoading: "Looking up Cangjie…",
+    sentenceNoData: "No data yet.",
+    sentenceComplete: "✓",
+    sentenceCompleteSub: "Phrase completed.",
     submit: "Submit",
     saving: "Saving…",
     loadingTitle: "Loading tutor…",
@@ -375,6 +387,18 @@ const LOCALES = {
     drillHeading: "練習區",
     drillInstruction: "輸入對應的漢字以推進。",
     enterCodeLabel: "輸入漢字：",
+    sentencePrompt: "逐字鍛造整句。",
+    sentenceProgressLabel: "字",
+    sentenceInputLabel: "鎖定此字",
+    sentenceInputPlaceholder: "倉頡碼或漢字",
+    sentenceHintLabel: "提示",
+    sentenceCorrect: "已鎖定，繼續。",
+    sentenceIncorrect: "再試一次。",
+    sentenceHintReady: "提示已開啟。",
+    sentenceLoading: "查詢倉頡中…",
+    sentenceNoData: "暫無資料。",
+    sentenceComplete: "✓",
+    sentenceCompleteSub: "完成整句。",
     submit: "送出",
     saving: "儲存中…",
     loadingTitle: "載入中…",
@@ -639,87 +663,14 @@ function SingleCharDrill({
 
 function SentenceDrill({
   exercise,
-  input,
-  setInput,
-  isSubmitting,
-  inputRef,
-  isDetailViewActive,
-  setDetailViewActive,
-  onPeek,
-  handleSubmit,
-  strings,
-  feedback,
-  feedbackMessage,
-  currentExerciseIndex,
-  totalExercises,
-  setHoveredChar // New prop to pass back which char is hovered
 }) {
   const text = exercise.data.text;
-  const currentMeaning = exercise.data.meaning || ""; 
-  const textChars = useMemo(() => Array.from(text), [text]);
-  const typedCount = Math.min(Array.from(input).length, textChars.length);
-  const isComplete = input === text;
-  const currentIndex = typedCount < textChars.length ? typedCount : -1;
-
-  useEffect(() => {
-    if (isComplete && !isSubmitting) {
-      handleSubmit({ preventDefault: () => {} });
-    }
-  }, [isComplete, isSubmitting, handleSubmit]);
 
   return (
     <div className="drill-container">
-      <div className={`drill-input-group ${isDetailViewActive ? 'hinted' : ''}`}>
-        {isDetailViewActive && (
-          <div className="drill-hint-overlay">
-             <CharacterDetailView character={{ char: isDetailViewActive }} />
-          </div>
-        )}
-        <div className="drill-input-content">
-          <div className="character-display sentence-display">
-            {textChars.map((char, index) => (
-               <span 
-                 key={index} 
-                 className={`char cangjie-char ${index < typedCount ? 'typed' : 'untyped'} ${index === currentIndex ? 'current' : ''}`}
-                 onMouseEnter={() => {
-                   if (onPeek) onPeek(char);
-                 }}
-                 onMouseLeave={() => setDetailViewActive(false)}
-               >
-                 {char}
-               </span>
-            ))}
-            <span className="meta" style={{ display: "block", marginTop: '1rem' }}>
-              {currentMeaning}
-            </span>
-          </div>
-          <label
-            style={{
-              display: "none",
-              position: "fixed",
-              top: -100,
-              left: -100,
-            }}
-            htmlFor="cangjie-input"
-          >
-            {strings.enterCodeLabel}
-          </label>
-          <input
-            id="cangjie-input"
-            type="text"
-            className="sentence-hidden-input"
-            ref={inputRef}
-            autoFocus
-            autoComplete="off"
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            disabled={isSubmitting}
-          />
-        </div>
+      <div className="sentence-forge">
+        {text}
       </div>
-      {feedback && feedbackMessage ? (
-        <div className={`feedback ${feedback.type}`}>{feedbackMessage}</div>
-      ) : null}
     </div>
   );
 }
@@ -912,12 +863,13 @@ function TutorApp() {
         ? (strings[feedback.messageKey] ?? "")
         : null);
 
-  function handleSubmit(event) {
+  function handleSubmit(event, overrideValue) {
     event.preventDefault();
     if (!currentExercise) return;
 
     if (currentExercise.type === 'character' || currentExercise.type === 'sentence') {
-      const sanitized = input.trim();
+      const rawInput = typeof overrideValue === "string" ? overrideValue : input;
+      const sanitized = (rawInput || "").trim();
       if (!sanitized) return;
 
       const targetText = currentExercise.type === 'character' ? currentExercise.data.char : currentExercise.data.text;
